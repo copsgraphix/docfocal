@@ -44,6 +44,7 @@ export default function TiptapEditor({ document }: { document: Document }) {
   );
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Underline,

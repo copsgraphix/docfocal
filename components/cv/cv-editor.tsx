@@ -109,7 +109,15 @@ export default function CVEditor({ cv }: { cv: CVRow }) {
   const [title, setTitle] = useState(cv.title);
   const [data, setData] = useState<CVData>(() => {
     try {
-      return cv.data ? (cv.data as unknown as CVData) : DEFAULT_DATA;
+      const raw = cv.data ? (cv.data as unknown as Partial<CVData>) : {};
+      return {
+        ...DEFAULT_DATA,
+        ...raw,
+        personalInfo: { ...DEFAULT_DATA.personalInfo, ...(raw.personalInfo ?? {}) },
+        experience: Array.isArray(raw.experience) ? raw.experience : [],
+        education: Array.isArray(raw.education) ? raw.education : [],
+        skills: Array.isArray(raw.skills) ? raw.skills : [],
+      };
     } catch {
       return DEFAULT_DATA;
     }
