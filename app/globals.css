@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans:             var(--font-inter);
+  --color-brand-primary:   #E10600;
+  --color-brand-hover:     #B80500;
+  --color-bg-main:         #FFFFFF;
+  --color-bg-section:      #F7F7F9;
+  --color-text-primary:    #111111;
+  --color-text-secondary:  #6B7280;
+  --color-sidebar-bg:      #111111;
+  --color-sidebar-text:    #FFFFFF;
+  --color-sidebar-active:  #E10600;
+  --color-border:          #E5E7EB;
+}
+
+body {
+  background-color: #FFFFFF;
+  color: #111111;
+}
