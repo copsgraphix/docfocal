@@ -8,8 +8,16 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "docfocal — Document Tools That Work",
-  description: "Professional document tools for modern teams",
+  title: {
+    default: "docfocal — Document Tools That Work",
+    template: "%s | docfocal",
+  },
+  description:
+    "Create, edit, and transform documents with speed and precision. Document editor, CV creator, and PDF toolkit in one focused app.",
+  openGraph: {
+    siteName: "docfocal",
+    type: "website",
+  },
 };
 
 export default function RootLayout({

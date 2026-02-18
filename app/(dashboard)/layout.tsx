@@ -1,18 +1,27 @@
 import Sidebar from "@/components/sidebar";
+import PageHeader from "@/components/dashboard/page-header";
+import { createClient } from "@/lib/supabase/server";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims ?? null;
+
+  const email = claims?.email ?? "";
+  const displayName =
+    (claims?.user_metadata?.full_name as string) ??
+    email.split("@")[0] ??
+    "User";
+
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar />
+      <Sidebar user={{ name: displayName, email }} />
       <div className="flex flex-1 flex-col">
-        {/* Top header */}
-        <header className="flex h-16 shrink-0 items-center border-b border-border bg-bg-main px-6">
-          <h1 className="text-lg font-semibold text-text-primary">Dashboard</h1>
-        </header>
+        <PageHeader />
 
         {/* Scrollable content */}
         <main className="flex-1 overflow-y-auto bg-bg-section p-6">

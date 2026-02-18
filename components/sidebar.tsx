@@ -11,6 +11,7 @@ import {
   Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { signOut } from "@/app/actions/auth";
 
 const mainNav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -24,8 +25,19 @@ const bottomNav = [
   { href: "/dashboard/upgrade", label: "Upgrade to Pro", icon: Zap },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  user: { name: string; email: string };
+}
+
+export default function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
+
+  const initials = user.name
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <aside className="flex h-screen w-60 flex-col bg-sidebar-bg">
@@ -73,15 +85,27 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* User placeholder */}
-      <div className="flex items-center gap-3 border-t border-white/10 px-4 py-4">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-primary text-xs font-bold text-white">
-          JD
+      {/* User section */}
+      <div className="border-t border-white/10 px-4 py-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-primary text-xs font-bold text-white">
+            {initials}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-white">
+              {user.name}
+            </p>
+            <p className="truncate text-xs text-white/50">{user.email}</p>
+          </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-white">John Doe</p>
-          <p className="truncate text-xs text-white/50">john@example.com</p>
-        </div>
+        <form action={signOut} className="mt-3">
+          <button
+            type="submit"
+            className="w-full rounded-lg px-3 py-1.5 text-left text-xs font-medium text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+          >
+            Sign out
+          </button>
+        </form>
       </div>
     </aside>
   );
