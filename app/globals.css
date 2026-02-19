@@ -65,6 +65,44 @@ body {
   font-size: 0.875em;
 }
 
+/* Highlight */
+.editor-prose mark {
+  border-radius: 0.2em;
+  padding: 0.05em 0.1em;
+}
+
+/* Images — draggable within doc */
+.editor-prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.5rem;
+  display: block;
+  margin: 0.75em auto;
+  cursor: grab;
+}
+.editor-prose img.ProseMirror-selectednode {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 2px;
+}
+
+/* Horizontal rule divider */
+.editor-prose hr {
+  border: none;
+  border-top: 2px solid var(--color-border);
+  margin: 2em 0;
+}
+
+/* Hyperlinks */
+.editor-prose a {
+  color: var(--color-brand-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.editor-prose a:hover {
+  opacity: 0.8;
+}
+
 /* Placeholder */
 .editor-prose p.is-empty:first-child::before {
   content: attr(data-placeholder);
@@ -108,5 +146,12 @@ body {
     background: white !important;
   }
 
-  @page { margin: 20mm; }
+  @page {
+    margin: 20mm;
+    @bottom-center {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 9pt;
+      color: #9ca3af;
+    }
+  }
 }
