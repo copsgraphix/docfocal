@@ -83,9 +83,11 @@ body {
   margin: 0 auto;
 }
 
-/* ── Print: show only the CV preview ──────────────────────── */
+/* ── Print: show only the CV preview or document content ──── */
 @media print {
   body * { visibility: hidden !important; }
+
+  /* CV print */
   #cv-preview,
   #cv-preview * { visibility: visible !important; }
   #cv-preview {
@@ -94,5 +96,17 @@ body {
     overflow: visible !important;
     box-shadow: none !important;
   }
-  @page { margin: 15mm; }
+
+  /* Document editor print */
+  #doc-print-area,
+  #doc-print-area * { visibility: visible !important; }
+  #doc-print-area {
+    position: fixed !important;
+    inset: 0 !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  @page { margin: 20mm; }
 }
