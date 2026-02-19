@@ -5,6 +5,7 @@ import {
   Bold, Italic, Underline, Strikethrough, Heading1, Heading2, Heading3,
   List, ListOrdered, Quote, Code, Undo, Redo, Link, ImageIcon, Minus,
   Highlighter, Indent, Outdent, Smile,
+  AlignLeft, AlignCenter, AlignRight, AlignJustify, ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
@@ -21,6 +22,25 @@ const SYMBOLS = [
   "≈","∞","→","←","↑","↓","↔","§","¶","†",
   "‡","•","…","—","–","½","¼","¾","€","£",
   "¥","₦","√","∑","π","Ω","μ","∂","∫","∏",
+];
+
+const LINE_HEIGHTS = [
+  { label: "1",    value: "1" },
+  { label: "1.15", value: "1.15" },
+  { label: "1.5",  value: "1.5" },
+  { label: "1.75", value: "1.75" },
+  { label: "2",    value: "2" },
+  { label: "2.5",  value: "2.5" },
+  { label: "3",    value: "3" },
+];
+
+const LETTER_SPACINGS = [
+  { label: "Tighter", value: "-0.05em" },
+  { label: "Normal",  value: "0em" },
+  { label: "Relaxed", value: "0.025em" },
+  { label: "Wide",    value: "0.05em" },
+  { label: "Wider",   value: "0.1em" },
+  { label: "Widest",  value: "0.2em" },
 ];
 
 // ── Sub-components ─────────────────────────────────────────────────────────
@@ -56,6 +76,72 @@ function Sep() {
   return <div className="mx-1 h-5 w-px bg-border shrink-0" />;
 }
 
+// Small dropdown for line-height / letter-spacing
+function StyleDropdown({
+  label,
+  title,
+  options,
+  current,
+  onSelect,
+}: {
+  label: string;
+  title: string;
+  options: { label: string; value: string }[];
+  current: string | null;
+  onSelect: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const activeLabel = options.find((o) => o.value === current)?.label ?? null;
+
+  return (
+    <div className="relative" ref={ref} title={title}>
+      <button
+        type="button"
+        onMouseDown={(e) => { e.preventDefault(); setOpen((v) => !v); }}
+        className="flex items-center gap-0.5 rounded px-1.5 py-1.5 text-[11px] font-medium text-text-secondary transition-colors hover:bg-bg-section hover:text-text-primary"
+      >
+        <span className="min-w-[1.75rem] text-center">
+          {activeLabel ?? label}
+        </span>
+        <ChevronDown className="h-3 w-3 shrink-0" />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full z-50 mt-0.5 min-w-[6rem] overflow-hidden rounded-lg border border-border bg-bg-main shadow-lg">
+          {options.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onSelect(opt.value);
+                setOpen(false);
+              }}
+              className={cn(
+                "block w-full px-3 py-1.5 text-left text-xs transition-colors hover:bg-bg-section",
+                opt.value === current
+                  ? "font-semibold text-brand-primary"
+                  : "text-text-primary"
+              )}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main toolbar ───────────────────────────────────────────────────────────
 export default function Toolbar({
   editor,
@@ -73,15 +159,12 @@ export default function Toolbar({
   const linkRef   = useRef<HTMLDivElement>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
 
-  // Close popups on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (linkRef.current && !linkRef.current.contains(e.target as Node)) {
+      if (linkRef.current && !linkRef.current.contains(e.target as Node))
         setShowLinkInput(false);
-      }
-      if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) {
+      if (pickerRef.current && !pickerRef.current.contains(e.target as Node))
         setShowPicker(false);
-      }
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -112,6 +195,15 @@ export default function Toolbar({
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const cmds = editor.commands as any;
+
+  // Current paragraph attrs for dropdowns
+  const paraAttrs =
+    editor.getAttributes("paragraph").lineHeight !== undefined
+      ? editor.getAttributes("paragraph")
+      : editor.getAttributes("heading");
+
+  const currentLH = paraAttrs?.lineHeight ?? null;
+  const currentLS = paraAttrs?.letterSpacing ?? null;
 
   return (
     <div className="flex flex-wrap items-center gap-0.5 border-b border-border bg-bg-main px-3 py-2">
@@ -158,6 +250,34 @@ export default function Toolbar({
       <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} isActive={editor.isActive("heading", { level: 1 })} title="Heading 1"><Heading1 className="h-4 w-4" /></Btn>
       <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} isActive={editor.isActive("heading", { level: 2 })} title="Heading 2"><Heading2 className="h-4 w-4" /></Btn>
       <Btn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} isActive={editor.isActive("heading", { level: 3 })} title="Heading 3"><Heading3 className="h-4 w-4" /></Btn>
+
+      <Sep />
+
+      {/* ── Text alignment ── */}
+      <Btn onClick={() => editor.chain().focus().setTextAlign("left").run()}    isActive={editor.isActive({ textAlign: "left" })}    title="Align left"><AlignLeft className="h-4 w-4" /></Btn>
+      <Btn onClick={() => editor.chain().focus().setTextAlign("center").run()}  isActive={editor.isActive({ textAlign: "center" })}  title="Align centre"><AlignCenter className="h-4 w-4" /></Btn>
+      <Btn onClick={() => editor.chain().focus().setTextAlign("right").run()}   isActive={editor.isActive({ textAlign: "right" })}   title="Align right"><AlignRight className="h-4 w-4" /></Btn>
+      <Btn onClick={() => editor.chain().focus().setTextAlign("justify").run()} isActive={editor.isActive({ textAlign: "justify" })} title="Justify"><AlignJustify className="h-4 w-4" /></Btn>
+
+      <Sep />
+
+      {/* ── Line height ── */}
+      <StyleDropdown
+        label="LH"
+        title="Line height"
+        options={LINE_HEIGHTS}
+        current={currentLH}
+        onSelect={(v) => cmds.setLineHeight(v)}
+      />
+
+      {/* ── Letter spacing ── */}
+      <StyleDropdown
+        label="LS"
+        title="Letter spacing"
+        options={LETTER_SPACINGS}
+        current={currentLS}
+        onSelect={(v) => cmds.setLetterSpacing(v)}
+      />
 
       <Sep />
 
@@ -208,7 +328,7 @@ export default function Toolbar({
         <ImageIcon className="h-4 w-4" />
       </Btn>
 
-      {/* ── Divider (HR) ── */}
+      {/* ── Divider ── */}
       <Btn onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Insert divider">
         <Minus className="h-4 w-4" />
       </Btn>
@@ -222,7 +342,6 @@ export default function Toolbar({
         </Btn>
         {showPicker && (
           <div className="absolute left-0 top-full z-50 mt-1 w-64 overflow-hidden rounded-lg border border-border bg-bg-main shadow-lg">
-            {/* Tabs */}
             <div className="flex border-b border-border">
               {(["emoji", "symbols"] as const).map((tab) => (
                 <button
@@ -239,7 +358,6 @@ export default function Toolbar({
                 </button>
               ))}
             </div>
-            {/* Grid */}
             <div className="grid grid-cols-10 gap-0.5 overflow-y-auto p-2" style={{ maxHeight: "9rem" }}>
               {(pickerTab === "emoji" ? EMOJIS : SYMBOLS).map((item) => (
                 <button

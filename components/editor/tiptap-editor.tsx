@@ -8,6 +8,7 @@ import Highlight from "@tiptap/extension-highlight";
 import TiptapImage from "@tiptap/extension-image";
 import TiptapLink from "@tiptap/extension-link";
 import CharacterCount from "@tiptap/extension-character-count";
+import TextAlign from "@tiptap/extension-text-align";
 import { Extension } from "@tiptap/core";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
@@ -102,6 +103,84 @@ const IndentExtension = Extension.create({
   },
 });
 
+// ── Line Height extension ──────────────────────────────────────────────────
+const LineHeightExtension = Extension.create({
+  name: "lineHeight",
+  addGlobalAttributes() {
+    return [
+      {
+        types: ["paragraph", "heading"],
+        attributes: {
+          lineHeight: {
+            default: null,
+            renderHTML: (attrs) =>
+              attrs.lineHeight ? { style: `line-height: ${attrs.lineHeight}` } : {},
+            parseHTML: (el) => el.style.lineHeight || null,
+          },
+        },
+      },
+    ];
+  },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  addCommands(): any {
+    return {
+      setLineHeight:
+        (lineHeight: string) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ({ tr, state, dispatch }: any) => {
+          const { from, to } = state.selection;
+          state.doc.nodesBetween(from, to, (node: any, pos: number) => {
+            if (["paragraph", "heading"].includes(node.type.name)) {
+              tr.setNodeMarkup(pos, undefined, { ...node.attrs, lineHeight });
+            }
+          });
+          if (dispatch) dispatch(tr);
+          return true;
+        },
+    };
+  },
+});
+
+// ── Letter Spacing extension ───────────────────────────────────────────────
+const LetterSpacingExtension = Extension.create({
+  name: "letterSpacing",
+  addGlobalAttributes() {
+    return [
+      {
+        types: ["paragraph", "heading"],
+        attributes: {
+          letterSpacing: {
+            default: null,
+            renderHTML: (attrs) =>
+              attrs.letterSpacing
+                ? { style: `letter-spacing: ${attrs.letterSpacing}` }
+                : {},
+            parseHTML: (el) => el.style.letterSpacing || null,
+          },
+        },
+      },
+    ];
+  },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  addCommands(): any {
+    return {
+      setLetterSpacing:
+        (letterSpacing: string) =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ({ tr, state, dispatch }: any) => {
+          const { from, to } = state.selection;
+          state.doc.nodesBetween(from, to, (node: any, pos: number) => {
+            if (["paragraph", "heading"].includes(node.type.name)) {
+              tr.setNodeMarkup(pos, undefined, { ...node.attrs, letterSpacing });
+            }
+          });
+          if (dispatch) dispatch(tr);
+          return true;
+        },
+    };
+  },
+});
+
 // ── Helpers ────────────────────────────────────────────────────────────────
 const EXPORT_OPTIONS: { label: string; format: ExportFormat; ext: string }[] = [
   { label: "Plain Text (.txt)", format: "txt", ext: "txt" },
@@ -174,6 +253,9 @@ export default function TiptapEditor({ document }: { document: Document }) {
       }),
       CharacterCount,
       IndentExtension,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
+      LineHeightExtension,
+      LetterSpacingExtension,
     ],
     content: (() => {
       try {
