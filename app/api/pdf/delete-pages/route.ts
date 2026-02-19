@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument } from "pdf-lib";
+import { checkAndConsumeEnergy } from "@/lib/energy";
 
 function parsePageSet(param: string, total: number): Set<number> {
   const set = new Set<number>();
@@ -30,6 +31,9 @@ export async function POST(request: NextRequest) {
   if (!file) return NextResponse.json({ error: "No file uploaded." }, { status: 400 });
   if (!pagesParam?.trim())
     return NextResponse.json({ error: "Specify pages to delete." }, { status: 400 });
+
+  const energyErr = await checkAndConsumeEnergy();
+  if (energyErr) return energyErr;
 
   try {
     const srcDoc = await PDFDocument.load(await file.arrayBuffer());

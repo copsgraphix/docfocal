@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument } from "pdf-lib";
+import { checkAndConsumeEnergy } from "@/lib/energy";
 
 export async function POST(request: NextRequest) {
   let formData: FormData;
@@ -16,6 +17,9 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   }
+
+  const energyErr = await checkAndConsumeEnergy();
+  if (energyErr) return energyErr;
 
   try {
     const merged = await PDFDocument.create();

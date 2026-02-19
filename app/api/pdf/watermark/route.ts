@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument, StandardFonts, degrees, rgb } from "pdf-lib";
+import { checkAndConsumeEnergy } from "@/lib/energy";
 
 export async function POST(request: NextRequest) {
   let formData: FormData;
@@ -15,6 +16,9 @@ export async function POST(request: NextRequest) {
 
   if (!file) return NextResponse.json({ error: "No file uploaded." }, { status: 400 });
   if (!text)  return NextResponse.json({ error: "Watermark text is required." }, { status: 400 });
+
+  const energyErr = await checkAndConsumeEnergy();
+  if (energyErr) return energyErr;
 
   try {
     const pdfDoc = await PDFDocument.load(await file.arrayBuffer());

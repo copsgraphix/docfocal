@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument } from "pdf-lib";
+import { checkAndConsumeEnergy } from "@/lib/energy";
 
 export async function POST(request: NextRequest) {
   let formData: FormData;
@@ -13,6 +14,9 @@ export async function POST(request: NextRequest) {
   if (files.length < 1) {
     return NextResponse.json({ error: "Upload at least one image." }, { status: 400 });
   }
+
+  const energyErr = await checkAndConsumeEnergy();
+  if (energyErr) return energyErr;
 
   try {
     const pdf = await PDFDocument.create();

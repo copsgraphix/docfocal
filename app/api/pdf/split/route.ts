@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument } from "pdf-lib";
+import { checkAndConsumeEnergy } from "@/lib/energy";
 
 function parsePageRange(input: string, totalPages: number): number[] {
   const indices: number[] = [];
@@ -37,6 +38,9 @@ export async function POST(request: NextRequest) {
   if (!pages) {
     return NextResponse.json({ error: "No page range specified." }, { status: 400 });
   }
+
+  const energyErr = await checkAndConsumeEnergy();
+  if (energyErr) return energyErr;
 
   try {
     const bytes = await file.arrayBuffer();

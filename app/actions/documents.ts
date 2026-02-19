@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserPlan } from "@/lib/subscription";
+import { consumeEnergyServer } from "@/lib/energy";
 
 const FREE_DOC_LIMIT = 10;
 
@@ -12,7 +13,13 @@ export async function createDocument() {
   const userId = authData?.claims?.sub;
   if (!userId) redirect("/login");
 
-  // Enforce free-tier limit
+  // Deduct energy before creating
+  const energy = await consumeEnergyServer();
+  if (!energy.ok && energy.reason === "no_energy") {
+    redirect("/dashboard/editor?error=no_energy");
+  }
+
+  // Enforce free-tier document limit
   const plan = await getUserPlan();
   if (plan === "free") {
     const { count } = await supabase

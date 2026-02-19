@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pdfParse = require("pdf-parse/lib/pdf-parse.js");
 import JSZip from "jszip";
+import { checkAndConsumeEnergy } from "@/lib/energy";
 
 function escapeHtml(str: string): string {
   return str
@@ -63,6 +64,9 @@ export async function POST(request: NextRequest) {
         { status: 422 }
       );
     }
+
+    const energyErr = await checkAndConsumeEnergy();
+    if (energyErr) return energyErr;
 
     const data = await pdfParse(buffer);
     const chunks = chunkText(data.text);

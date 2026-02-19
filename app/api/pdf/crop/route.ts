@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument } from "pdf-lib";
+import { checkAndConsumeEnergy } from "@/lib/energy";
 
 export async function POST(request: NextRequest) {
   let formData: FormData;
@@ -21,6 +22,9 @@ export async function POST(request: NextRequest) {
   const sumVert = top + bottom;
   if (sum >= 100 || sumVert >= 100)
     return NextResponse.json({ error: "Crop margins leave no visible area." }, { status: 400 });
+
+  const energyErr = await checkAndConsumeEnergy();
+  if (energyErr) return energyErr;
 
   try {
     const pdfDoc = await PDFDocument.load(await file.arrayBuffer());

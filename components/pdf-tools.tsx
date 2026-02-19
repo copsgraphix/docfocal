@@ -710,6 +710,10 @@ export function PdfToJpegTool() {
     if (!file) { setError("Select a PDF file first."); return; }
     setStatus("processing"); setError(null);
     try {
+      // Deduct energy before running client-side conversion
+      const energyRes = await fetch("/api/energy/consume", { method: "POST" });
+      if (energyRes.status === 402) { const j = await energyRes.json(); throw new Error(j.error); }
+
       const pdfjsLib = await import("pdfjs-dist");
       pdfjsLib.GlobalWorkerOptions.workerSrc =
         `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -907,6 +911,10 @@ export function CompressPdfTool() {
     if (!file) { setError("Select a PDF file first."); return; }
     setStatus("processing"); setError(null); setProgress(null);
     try {
+      // Deduct energy before running client-side compression
+      const energyRes = await fetch("/api/energy/consume", { method: "POST" });
+      if (energyRes.status === 402) { const j = await energyRes.json(); throw new Error(j.error); }
+
       // Dynamic imports keep the initial bundle lean
       const [{ PDFDocument }, pdfjsLib] = await Promise.all([
         import("pdf-lib"),
@@ -983,6 +991,10 @@ export function CompressImageTool() {
     if (!file) { setError("Select an image file first."); return; }
     setStatus("processing"); setError(null);
     try {
+      // Deduct energy before running client-side compression
+      const energyRes = await fetch("/api/energy/consume", { method: "POST" });
+      if (energyRes.status === 402) { const j = await energyRes.json(); throw new Error(j.error); }
+
       const bitmap = await createImageBitmap(file);
       let { width, height } = bitmap;
       const limit = parseInt(maxDim) || 2000;

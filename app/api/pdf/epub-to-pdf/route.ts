@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import JSZip from "jszip";
 import { textToPdf } from "@/lib/pdf-text-layout";
+import { checkAndConsumeEnergy } from "@/lib/energy";
 
 function stripTags(html: string): string {
   return html.replace(/<[^>]*>/g, " ").replace(/\s{2,}/g, " ").trim();
@@ -29,6 +30,9 @@ export async function POST(request: NextRequest) {
   if (!file) {
     return NextResponse.json({ error: "No file uploaded." }, { status: 400 });
   }
+
+  const energyErr = await checkAndConsumeEnergy();
+  if (energyErr) return energyErr;
 
   try {
     const bytes = await file.arrayBuffer();

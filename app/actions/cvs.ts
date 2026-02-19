@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getUserPlan } from "@/lib/subscription";
+import { consumeEnergyServer } from "@/lib/energy";
 import type { CVData } from "@/components/cv/cv-editor";
 
 const FREE_CV_LIMIT = 5;
@@ -13,7 +14,13 @@ export async function createCV() {
   const userId = authData?.claims?.sub;
   if (!userId) redirect("/login");
 
-  // Enforce free-tier limit
+  // Deduct energy before creating
+  const energy = await consumeEnergyServer();
+  if (!energy.ok && energy.reason === "no_energy") {
+    redirect("/dashboard/cv?error=no_energy");
+  }
+
+  // Enforce free-tier CV limit
   const plan = await getUserPlan();
   if (plan === "free") {
     const { count } = await supabase

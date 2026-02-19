@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument } from "pdf-lib";
+import { checkAndConsumeEnergy } from "@/lib/energy";
 
 export async function POST(request: NextRequest) {
   let formData: FormData;
@@ -11,6 +12,9 @@ export async function POST(request: NextRequest) {
 
   const file = formData.get("file") as File | null;
   if (!file) return NextResponse.json({ error: "No file uploaded." }, { status: 400 });
+
+  const energyErr = await checkAndConsumeEnergy();
+  if (energyErr) return energyErr;
 
   try {
     const pdfDoc   = await PDFDocument.load(await file.arrayBuffer());

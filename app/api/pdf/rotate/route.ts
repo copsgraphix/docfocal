@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument, degrees } from "pdf-lib";
+import { checkAndConsumeEnergy } from "@/lib/energy";
 
 function parsePageList(param: string | null, total: number): number[] {
   if (!param || param.trim() === "all") return Array.from({ length: total }, (_, i) => i);
@@ -32,6 +33,9 @@ export async function POST(request: NextRequest) {
   if (!file) return NextResponse.json({ error: "No file uploaded." }, { status: 400 });
   if (![90, 180, 270].includes(angle))
     return NextResponse.json({ error: "Angle must be 90, 180, or 270." }, { status: 400 });
+
+  const energyErr = await checkAndConsumeEnergy();
+  if (energyErr) return energyErr;
 
   try {
     const pdfDoc = await PDFDocument.load(await file.arrayBuffer());

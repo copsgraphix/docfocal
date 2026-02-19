@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import mammoth from "mammoth";
 import { textToPdf } from "@/lib/pdf-text-layout";
+import { checkAndConsumeEnergy } from "@/lib/energy";
 
 export async function POST(request: NextRequest) {
   let formData: FormData;
@@ -25,6 +26,9 @@ export async function POST(request: NextRequest) {
         { status: 422 }
       );
     }
+
+    const energyErr = await checkAndConsumeEnergy();
+    if (energyErr) return energyErr;
 
     const result = await mammoth.extractRawText({ buffer });
     const text = result.value;

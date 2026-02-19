@@ -1,14 +1,24 @@
 import { PDFDocument } from "pdf-lib";
 import { NextResponse } from "next/server";
+import { checkAndConsumeEnergy } from "@/lib/energy";
 
 export async function POST(request: Request) {
+  let formData: FormData;
   try {
-    const formData = await request.formData();
+    formData = await request.formData();
+  } catch {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
 
-    const file = formData.get("file") as File | null;
-    const sig  = formData.get("signature") as File | null;
-    if (!file || !sig)
-      return NextResponse.json({ error: "file and signature are required" }, { status: 400 });
+  const file = formData.get("file") as File | null;
+  const sig  = formData.get("signature") as File | null;
+  if (!file || !sig)
+    return NextResponse.json({ error: "file and signature are required" }, { status: 400 });
+
+  const energyErr = await checkAndConsumeEnergy();
+  if (energyErr) return energyErr;
+
+  try {
 
     const page = Math.max(1, parseInt((formData.get("page") as string) || "1", 10));
     // Percentages (0–100) from the form
