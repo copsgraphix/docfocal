@@ -2,6 +2,7 @@ import Link from "next/link";
 import { FileText, Plus, Search, Trash2, X, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { createCV, deleteCV } from "@/app/actions/cvs";
+import { NoEnergyTrigger } from "@/components/no-energy-modal";
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", {
@@ -32,6 +33,8 @@ export default async function CVListPage({
 
   return (
     <div>
+      {error === "no_energy" && <NoEnergyTrigger />}
+
       {error === "limit" && (
         <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4">
           <Zap className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />

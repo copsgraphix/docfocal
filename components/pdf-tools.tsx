@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
+import { NoEnergyModal } from "@/components/no-energy-modal";
 import {
   Upload, X, FileText, Merge, Scissors, Image, FileOutput,
   FileInput, BookOpen, RotateCw, Trash2, Crop, PenLine, Hash,
@@ -77,10 +78,22 @@ function SingleFileInput({ file, accept, onFile, label }: {
 function StatusMessages({ error, done, doneMsg }: {
   error: string | null; done: boolean; doneMsg: string;
 }) {
+  const isEnergyError = error ? error.includes("daily energy") : false;
+  const [showEnergyModal, setShowEnergyModal] = useState(false);
+
+  useEffect(() => {
+    if (isEnergyError) setShowEnergyModal(true);
+  }, [isEnergyError]);
+
   return (
     <>
-      {error && <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">{error}</p>}
-      {done  && <p className="mb-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{doneMsg}</p>}
+      {error && (
+        <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-600">
+          {isEnergyError ? "Daily energy exhausted — see the popup to upgrade or wait." : error}
+        </p>
+      )}
+      {done && <p className="mb-3 rounded-lg bg-green-50 px-3 py-2 text-sm text-green-700">{doneMsg}</p>}
+      <NoEnergyModal open={showEnergyModal} onClose={() => setShowEnergyModal(false)} />
     </>
   );
 }
