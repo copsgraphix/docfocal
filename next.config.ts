@@ -20,11 +20,10 @@ export default withSentryConfig(withLogtailConfig, {
   // Suppress noisy build output
   silent: !process.env.CI,
 
-  // Upload source maps to Sentry for readable stack traces
-  widenClientFileUpload: true,
-
-  // Automatically tree-shake Sentry logger statements
-  disableLogger: true,
+  // Only upload source maps when the auth token is available (skips on Railway if not set)
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
 
   // Sentry org + project (from sentry.io → Settings → Projects)
   org: process.env.SENTRY_ORG,
