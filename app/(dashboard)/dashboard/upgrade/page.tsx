@@ -4,6 +4,7 @@ import { Check, Zap } from "lucide-react";
 export const metadata: Metadata = { title: "Upgrade to Pro" };
 import { getUserPlan } from "@/lib/subscription";
 import CheckoutButton from "@/components/billing/checkout-button";
+import { cancelSubscription } from "@/app/actions/billing";
 
 const FREE_FEATURES = [
   "Document editor",
@@ -24,7 +25,11 @@ const PRO_FEATURES = [
 export default async function UpgradePage({
   searchParams,
 }: {
-  searchParams: Promise<{ success?: string; error?: string }>;
+  searchParams: Promise<{
+    success?: string;
+    error?: string;
+    cancelled?: string;
+  }>;
 }) {
   const [plan, params] = await Promise.all([getUserPlan(), searchParams]);
   const isPro = plan === "pro";
@@ -48,11 +53,28 @@ export default async function UpgradePage({
           Payment successful — you&apos;re now on Pro!
         </div>
       )}
-      {params.error && (
+      {params.cancelled && (
+        <div className="mb-6 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
+          Your subscription has been cancelled. You&apos;ll keep Pro access until the end of your billing period.
+        </div>
+      )}
+      {params.error === "payment_failed" && (
         <div className="mb-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-          {params.error === "payment_failed"
-            ? "Payment was not completed. Please try again."
-            : "Something went wrong. Please try again or contact support."}
+          Payment was not completed. Please try again.
+        </div>
+      )}
+      {params.error === "cancel_failed" && (
+        <div className="mb-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          Could not cancel your subscription. Please try again or contact{" "}
+          <a href="mailto:support@docfocal.com" className="underline">
+            support@docfocal.com
+          </a>
+          .
+        </div>
+      )}
+      {params.error && !["payment_failed", "cancel_failed"].includes(params.error) && (
+        <div className="mb-6 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          Something went wrong. Please try again or contact support.
         </div>
       )}
 
@@ -117,14 +139,24 @@ export default async function UpgradePage({
         </div>
       </div>
 
+      {/* Cancel subscription (Pro users only) */}
       {isPro && (
-        <p className="mt-6 text-center text-xs text-text-secondary">
-          To cancel your subscription, email{" "}
-          <a href="mailto:support@docfocal.com" className="text-brand-primary underline">
-            support@docfocal.com
-          </a>
-          .
-        </p>
+        <div className="mt-8 rounded-xl border border-border bg-bg-main p-6">
+          <h3 className="mb-1 text-sm font-semibold text-text-primary">
+            Cancel subscription
+          </h3>
+          <p className="mb-4 text-xs text-text-secondary">
+            You&apos;ll keep Pro access until the end of your current billing period. After that your account reverts to the Free plan.
+          </p>
+          <form action={cancelSubscription}>
+            <button
+              type="submit"
+              className="rounded-lg border border-red-200 px-4 py-2 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50"
+            >
+              Cancel subscription
+            </button>
+          </form>
+        </div>
       )}
     </div>
   );

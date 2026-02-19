@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Plus, Trash2, Zap } from "lucide-react";
+import { FileText, Plus, Search, Trash2, X, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { createCV, deleteCV } from "@/app/actions/cvs";
 
@@ -14,14 +14,21 @@ function formatDate(iso: string) {
 export default async function CVListPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; q?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, q } = await searchParams;
   const supabase = await createClient();
-  const { data: cvs } = await supabase
+
+  let query = supabase
     .from("cvs")
     .select("id, title, updated_at")
     .order("updated_at", { ascending: false });
+
+  if (q?.trim()) {
+    query = query.ilike("title", `%${q.trim()}%`);
+  }
+
+  const { data: cvs } = await query;
 
   return (
     <div>
@@ -41,11 +48,12 @@ export default async function CVListPage({
         </div>
       )}
 
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-text-primary">CV Creator</h2>
           <p className="mt-1 text-text-secondary">
             {cvs?.length ?? 0} CV{cvs?.length !== 1 ? "s" : ""}
+            {q?.trim() ? ` matching "${q.trim()}"` : ""}
           </p>
         </div>
         <form action={createCV}>
@@ -59,13 +67,47 @@ export default async function CVListPage({
         </form>
       </div>
 
+      {/* Search */}
+      <form method="GET" className="mb-5 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-secondary/50" />
+          <input
+            name="q"
+            type="search"
+            defaultValue={q ?? ""}
+            placeholder="Search CVs…"
+            className="w-full rounded-lg border border-border bg-bg-section py-2 pl-9 pr-3 text-sm text-text-primary placeholder:text-text-secondary/40 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+          />
+        </div>
+        {q?.trim() && (
+          <Link
+            href="/dashboard/cv"
+            className="flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-xs text-text-secondary transition-colors hover:bg-bg-section"
+          >
+            <X className="h-3.5 w-3.5" />
+            Clear
+          </Link>
+        )}
+      </form>
+
       {!cvs?.length ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
           <FileText className="mb-4 h-10 w-10 text-text-secondary/40" />
-          <p className="font-medium text-text-primary">No CVs yet</p>
-          <p className="mt-1 text-sm text-text-secondary">
-            Create your first CV to get started.
-          </p>
+          {q?.trim() ? (
+            <>
+              <p className="font-medium text-text-primary">No results found</p>
+              <p className="mt-1 text-sm text-text-secondary">
+                Try a different search term.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-medium text-text-primary">No CVs yet</p>
+              <p className="mt-1 text-sm text-text-secondary">
+                Create your first CV to get started.
+              </p>
+            </>
+          )}
         </div>
       ) : (
         <div className="space-y-2">
