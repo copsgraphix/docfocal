@@ -3,17 +3,20 @@
 import { useState } from "react";
 import { Check, Zap } from "lucide-react";
 import CheckoutButton from "@/components/billing/checkout-button";
+import type { CurrencyConfig } from "@/lib/geo";
 
 interface UpgradeToggleProps {
   isPro: boolean;
   freeFeatures: string[];
   proFeatures: string[];
+  currency: CurrencyConfig;
 }
 
 export default function UpgradeToggle({
   isPro,
   freeFeatures,
   proFeatures,
+  currency,
 }: UpgradeToggleProps) {
   const [interval, setInterval] = useState<"monthly" | "yearly">("monthly");
 
@@ -64,7 +67,7 @@ export default function UpgradeToggle({
             Free
           </p>
           <p className="mt-2 text-3xl font-bold text-text-primary">
-            ₦0
+            {currency.isNGN ? "₦0" : "$0"}
             <span className="text-base font-normal text-text-secondary">/mo</span>
           </p>
           <ul className="mt-6 space-y-3">
@@ -97,18 +100,18 @@ export default function UpgradeToggle({
           {interval === "monthly" ? (
             <div className="mt-2">
               <p className="text-3xl font-bold text-text-primary">
-                ₦900
+                {currency.monthly}
                 <span className="text-base font-normal text-text-secondary">/mo</span>
               </p>
             </div>
           ) : (
             <div className="mt-2">
               <p className="text-3xl font-bold text-text-primary">
-                ₦9,000
+                {currency.yearly}
                 <span className="text-base font-normal text-text-secondary">/yr</span>
               </p>
               <p className="mt-0.5 text-xs text-green-600 font-medium">
-                ₦750/mo · save ₦1,800 vs monthly
+                {currency.yearlyPerMonth} · save {currency.yearlySavings} vs monthly
               </p>
             </div>
           )}

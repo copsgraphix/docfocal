@@ -15,6 +15,7 @@ import {
   FileOutput,
   Zap,
 } from "lucide-react";
+import type { CurrencyConfig } from "@/lib/geo";
 
 // ── Animation variants ─────────────────────────────────────────
 const fadeUp = {
@@ -306,7 +307,7 @@ const PRO_FEATURES = [
 ];
 
 // ── Main ───────────────────────────────────────────────────────
-export default function LandingPage() {
+export default function LandingPage({ currency }: { currency: CurrencyConfig }) {
   return (
     <main style={{ backgroundColor: BG_1 }}>
 
@@ -679,7 +680,8 @@ export default function LandingPage() {
                 🆓 Free Plan
               </p>
               <p className="mb-1 text-4xl font-black" style={{ color: TEXT }}>
-                ₦0<span className="text-base font-normal" style={{ color: MUTED }}>/month</span>
+                {currency.isNGN ? "₦0" : "$0"}
+                <span className="text-base font-normal" style={{ color: MUTED }}>/month</span>
               </p>
               <p className="mb-6 text-xs" style={{ color: "#9CA3AF" }}>No account needed · Limited by device</p>
               <ul className="mb-8 space-y-3">
@@ -722,10 +724,12 @@ export default function LandingPage() {
                 </span>
               </div>
               <div className="mb-1">
-                <span className="text-4xl font-black" style={{ color: TEXT }}>₦900</span>
+                <span className="text-4xl font-black" style={{ color: TEXT }}>{currency.monthly}</span>
                 <span className="text-base font-normal" style={{ color: MUTED }}>/month</span>
               </div>
-              <p className="mb-6 text-xs" style={{ color: "#9CA3AF" }}>$1/month · International pricing</p>
+              <p className="mb-6 text-xs" style={{ color: "#9CA3AF" }}>
+                or {currency.yearly}/yr · {currency.yearlyPerMonth} · save {currency.yearlySavings}
+              </p>
               <ul className="mb-8 space-y-3">
                 {PRO_FEATURES.map((f) => (
                   <li key={f} className="flex items-center gap-3 text-sm" style={{ color: TEXT }}>

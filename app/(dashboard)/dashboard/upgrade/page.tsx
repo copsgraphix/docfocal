@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import { Check, Zap } from "lucide-react";
 import { getUserPlan } from "@/lib/subscription";
 import { cancelSubscription } from "@/app/actions/billing";
+import { getCurrencyConfig } from "@/lib/geo";
 import UpgradeToggle from "@/components/billing/upgrade-toggle";
 
 export const metadata: Metadata = { title: "Upgrade to Pro" };
@@ -35,7 +35,7 @@ export default async function UpgradePage({
     cancelled?: string;
   }>;
 }) {
-  const [plan, params] = await Promise.all([getUserPlan(), searchParams]);
+  const [plan, currency, params] = await Promise.all([getUserPlan(), getCurrencyConfig(), searchParams]);
   const isPro = plan === "pro";
 
   return (
@@ -83,7 +83,7 @@ export default async function UpgradePage({
       )}
 
       {/* Plan cards — interval toggle handled client-side */}
-      <UpgradeToggle isPro={isPro} freeFeatures={FREE_FEATURES} proFeatures={PRO_FEATURES} />
+      <UpgradeToggle isPro={isPro} freeFeatures={FREE_FEATURES} proFeatures={PRO_FEATURES} currency={currency} />
 
       {/* Cancel subscription (Pro users only) */}
       {isPro && (
