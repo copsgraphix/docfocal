@@ -30,8 +30,6 @@ import {
 import { cn } from "@/lib/utils";
 import { signOut } from "@/app/actions/auth";
 import { useSidebar } from "@/components/dashboard/sidebar-context";
-import { EnergyWidget } from "@/components/dashboard/energy-widget";
-import type { EnergyStatus } from "@/lib/energy";
 
 const NAV_GROUPS = [
   {
@@ -82,7 +80,6 @@ const BOTTOM_NAV = [
 
 interface SidebarProps {
   user: { name: string; email: string };
-  energy: EnergyStatus | null;
 }
 
 function isActive(href: string, pathname: string): boolean {
@@ -90,7 +87,7 @@ function isActive(href: string, pathname: string): boolean {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
-export default function Sidebar({ user, energy }: SidebarProps) {
+export default function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
   const { isOpen, close } = useSidebar();
 
@@ -191,9 +188,6 @@ export default function Sidebar({ user, energy }: SidebarProps) {
             </Link>
           ))}
         </div>
-
-        {/* Energy widget */}
-        {energy && <EnergyWidget initial={energy} />}
 
         {/* User */}
         <div className="shrink-0 border-t border-white/10 px-4 py-4">

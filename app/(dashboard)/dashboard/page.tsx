@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { getUserEnergyStatus } from "@/lib/energy";
+import { EnergyWidget } from "@/components/dashboard/energy-widget";
 import {
   FilePlus,
   FileText,
@@ -80,10 +82,11 @@ function ToolCard({
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  const [{ count: docCount }, { count: cvCount }, plan] = await Promise.all([
+  const [{ count: docCount }, { count: cvCount }, plan, energy] = await Promise.all([
     supabase.from("documents").select("*", { count: "exact", head: true }),
     supabase.from("cvs").select("*", { count: "exact", head: true }),
     getUserPlan(),
+    getUserEnergyStatus(),
   ]);
 
   const stats = [
@@ -102,13 +105,14 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div className="mb-10 grid gap-4 sm:grid-cols-3">
+      <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map(({ label, value }) => (
           <div key={label} className="rounded-xl border border-border bg-bg-main p-5">
             <p className="text-xs text-text-secondary">{label}</p>
             <p className="mt-1 text-3xl font-bold text-text-primary">{value}</p>
           </div>
         ))}
+        {energy && <EnergyWidget initial={energy} variant="dashboard" />}
       </div>
 
       {/* CREATE & WRITE */}
