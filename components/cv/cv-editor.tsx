@@ -2,7 +2,8 @@
 
 import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, Trash2, Printer } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Printer, PenLine, Eye } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { updateCV } from "@/app/actions/cvs";
 import CVPreview from "./cv-preview";
 import type { Tables } from "@/lib/supabase/types";
@@ -123,6 +124,7 @@ export default function CVEditor({ cv }: { cv: CVRow }) {
     }
   });
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "unsaved">("saved");
+  const [mobileTab, setMobileTab] = useState<"edit" | "preview">("edit");
 
   const titleRef = useRef(cv.title);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -206,17 +208,47 @@ export default function CVEditor({ cv }: { cv: CVRow }) {
   return (
     <div className="-m-6 flex h-[calc(100vh-4rem)] flex-col">
       {/* Sub-header */}
-      <div className="flex shrink-0 items-center gap-3 border-b border-border bg-bg-main px-5 py-3">
+      <div className="flex shrink-0 items-center gap-2 border-b border-border bg-bg-main px-4 py-3 lg:px-5">
         <Link
           href="/dashboard/cv"
           className="flex items-center gap-1.5 text-sm text-text-secondary transition-colors hover:text-text-primary"
         >
           <ArrowLeft className="h-4 w-4" />
-          CVs
+          <span className="hidden sm:inline">CVs</span>
         </Link>
-        <div className="flex-1" />
-        <span className="text-xs text-text-secondary">
-          {saveStatus === "saving" ? "Saving…" : saveStatus === "unsaved" ? "Unsaved changes" : "Saved"}
+
+        {/* Mobile tab toggle — hidden on desktop */}
+        <div className="mx-auto flex items-center rounded-lg border border-border bg-bg-section p-0.5 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setMobileTab("edit")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
+              mobileTab === "edit"
+                ? "bg-bg-main text-text-primary shadow-sm"
+                : "text-text-secondary hover:text-text-primary"
+            )}
+          >
+            <PenLine className="h-3.5 w-3.5" />
+            Edit
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobileTab("preview")}
+            className={cn(
+              "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold transition-colors",
+              mobileTab === "preview"
+                ? "bg-bg-main text-text-primary shadow-sm"
+                : "text-text-secondary hover:text-text-primary"
+            )}
+          >
+            <Eye className="h-3.5 w-3.5" />
+            Preview
+          </button>
+        </div>
+
+        <span className="hidden text-xs text-text-secondary lg:block">
+          {saveStatus === "saving" ? "Saving…" : saveStatus === "unsaved" ? "Unsaved" : "Saved"}
         </span>
         <button
           type="button"
@@ -224,14 +256,25 @@ export default function CVEditor({ cv }: { cv: CVRow }) {
           className="flex items-center gap-1.5 rounded-lg bg-brand-primary px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
         >
           <Printer className="h-3.5 w-3.5" />
-          Download PDF
+          <span className="hidden sm:inline">Download PDF</span>
         </button>
       </div>
 
       {/* Body */}
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {/* ── Left: form ─────────────────────────── */}
-        <div className="w-80 shrink-0 space-y-6 overflow-y-auto border-r border-border bg-bg-section p-5">
+        <div
+          className={cn(
+            "shrink-0 space-y-6 overflow-y-auto border-r border-border bg-bg-section p-5",
+            "w-full lg:w-80",
+            mobileTab === "preview" ? "hidden lg:block" : "block"
+          )}
+        >
+          {/* Save status — mobile only */}
+          <p className="text-center text-xs text-text-secondary lg:hidden">
+            {saveStatus === "saving" ? "Saving…" : saveStatus === "unsaved" ? "Unsaved changes" : "✓ Saved"}
+          </p>
+
           {/* CV title (internal label) */}
           <div>
             <label className="mb-1 block text-xs font-medium text-text-secondary">
@@ -336,7 +379,13 @@ export default function CVEditor({ cv }: { cv: CVRow }) {
         </div>
 
         {/* ── Right: live preview ─────────────────── */}
-        <div className="flex-1 overflow-y-auto bg-gray-100 p-8">
+        <div
+          className={cn(
+            "overflow-y-auto bg-gray-100 p-4 lg:p-8",
+            "w-full lg:flex-1",
+            mobileTab === "edit" ? "hidden lg:block" : "block"
+          )}
+        >
           <div id="cv-preview">
             <CVPreview title={title} data={data} />
           </div>
