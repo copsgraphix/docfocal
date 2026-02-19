@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { resend, FROM, welcomeEmailHtml } from "@/lib/resend";
 
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
@@ -35,6 +36,19 @@ export async function signUp(formData: FormData) {
 
   if (error) {
     redirect(`/signup?error=${encodeURIComponent(error.message)}`);
+  }
+
+  // Send welcome email (non-fatal)
+  if (data.user) {
+    const name =
+      (formData.get("name") as string | null) ??
+      (data.user.email?.split("@")[0] ?? "there");
+    resend.emails.send({
+      from: FROM,
+      to: data.user.email!,
+      subject: "Welcome to docfocal!",
+      html: welcomeEmailHtml(name),
+    }).catch(() => {}); // fire-and-forget
   }
 
   // Link referral: resolve referral code → referrer profile id

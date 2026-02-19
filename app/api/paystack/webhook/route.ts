@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { resend, FROM, proUpgradeEmailHtml } from "@/lib/resend";
 
 // Paystack plan codes for monthly vs yearly (set in env)
 const MONTHLY_PLAN_CODE = process.env.PAYSTACK_MONTHLY_PLAN_CODE ?? "";
@@ -46,12 +47,24 @@ export async function POST(request: NextRequest) {
         .select("user_id")
         .single();
 
-      // 2. Sync profile plan_type
+      // 2. Sync profile plan_type + send upgrade email
       if (updatedSub?.user_id) {
         await supabase
           .from("profiles")
           .update({ plan_type: "pro", updated_at: new Date().toISOString() })
           .eq("id", updatedSub.user_id);
+
+        // Get user email for upgrade notification
+        const { data: { user } } = await supabase.auth.admin.getUserById(updatedSub.user_id);
+        if (user?.email) {
+          const name = (user.user_metadata?.full_name as string) ?? user.email.split("@")[0];
+          resend.emails.send({
+            from: FROM,
+            to: user.email,
+            subject: "You're on Pro ✦ — docfocal",
+            html: proUpgradeEmailHtml(name),
+          }).catch(() => {});
+        }
 
         // 3. Referral rewards
         const { data: buyerProfile } = await supabase

@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@logtail/next": "^0.3.1",
+    "@sentry/nextjs": "^10.39.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.97.0",
     "@tiptap/extension-placeholder": "^3.20.0",
@@ -26,8 +28,11 @@
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^2.4.5",
     "pdfjs-dist": "^5.4.624",
+    "posthog-js": "^1.351.3",
+    "posthog-node": "^5.24.17",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "resend": "^6.9.2",
     "stripe": "^20.3.1",
     "tailwind-merge": "^3.4.1"
   },

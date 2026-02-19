@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { resend, FROM, proUpgradeEmailHtml } from "@/lib/resend";
 import type Stripe from "stripe";
 
 export async function POST(request: NextRequest) {
@@ -51,6 +52,20 @@ export async function POST(request: NextRequest) {
           updated_at: new Date().toISOString(),
         })
         .eq("id", userId);
+
+      // Send upgrade email when subscription becomes active
+      if (isActive && event.type === "customer.subscription.created") {
+        const { data: { user } } = await supabase.auth.admin.getUserById(userId);
+        if (user?.email) {
+          const name = (user.user_metadata?.full_name as string) ?? user.email.split("@")[0];
+          resend.emails.send({
+            from: FROM,
+            to: user.email,
+            subject: "You're on Pro ✦ — docfocal",
+            html: proUpgradeEmailHtml(name),
+          }).catch(() => {});
+        }
+      }
       break;
     }
 
