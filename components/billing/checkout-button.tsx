@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { Zap, Loader2 } from "lucide-react";
 
-export default function CheckoutButton() {
+interface CheckoutButtonProps {
+  interval: "monthly" | "yearly";
+}
+
+export default function CheckoutButton({ interval }: CheckoutButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -11,7 +15,11 @@ export default function CheckoutButton() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/paystack/initialize", { method: "POST" });
+      const res = await fetch("/api/paystack/initialize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ interval }),
+      });
       const json = await res.json();
       if (json.url) {
         window.location.href = json.url;

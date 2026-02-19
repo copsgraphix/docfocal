@@ -13,6 +13,12 @@ export async function POST(request: NextRequest) {
   }
 
   const { origin } = new URL(request.url);
+  const body = await request.json().catch(() => ({}));
+  const interval: "monthly" | "yearly" = body.interval === "yearly" ? "yearly" : "monthly";
+  const planCode =
+    interval === "yearly"
+      ? process.env.PAYSTACK_YEARLY_PLAN_CODE
+      : process.env.PAYSTACK_MONTHLY_PLAN_CODE ?? process.env.PAYSTACK_PRO_PLAN_CODE;
 
   try {
     // Ensure a subscription row exists for this user
@@ -23,7 +29,7 @@ export async function POST(request: NextRequest) {
 
     const data = await paystack.post<InitializeData>("/transaction/initialize", {
       email,
-      plan: process.env.PAYSTACK_PRO_PLAN_CODE,
+      plan: planCode,
       callback_url: `${origin}/api/paystack/verify`,
       metadata: { userId },
     });
