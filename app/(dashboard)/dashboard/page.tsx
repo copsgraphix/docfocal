@@ -151,7 +151,7 @@ export default async function DashboardPage() {
         <SectionHeading>Secure</SectionHeading>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <ToolCard href="/dashboard/pdf" icon={Droplets}  title="Add Watermark" description="Stamp diagonal text on every page" />
-          <ToolCard href="/dashboard/pdf" icon={PenLine}   title="Sign PDF"      description="Draw or type your signature" soon />
+          <ToolCard href="/dashboard/pdf" icon={PenLine}   title="Sign PDF"      description="Draw or type your signature and embed it" />
         </div>
       </section>
 

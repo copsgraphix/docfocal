@@ -1,7 +1,7 @@
 "use client";
 // Note: metadata must be in a server component; title is set via PageHeader for this client page
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import {
   Upload,
   X,
@@ -940,6 +940,271 @@ function AddImageToPdfTool() {
   );
 }
 
+// ─── Sign Tool ────────────────────────────────────────────────────────────────
+
+const SIGN_POSITIONS = [
+  { label: "Bottom Left",   x: "5",  y: "82" },
+  { label: "Bottom Center", x: "28", y: "82" },
+  { label: "Bottom Right",  x: "60", y: "82" },
+] as const;
+
+function SignTool() {
+  const [pdfFile, setPdfFile]       = useState<File | null>(null);
+  const [mode, setMode]             = useState<"draw" | "type">("draw");
+  const [typedSig, setTypedSig]     = useState("");
+  const [page, setPage]             = useState("1");
+  const [preset, setPreset]         = useState<string>(SIGN_POSITIONS[0].label);
+  const [xPct, setXPct]             = useState<string>(SIGN_POSITIONS[0].x);
+  const [yPct, setYPct]             = useState<string>(SIGN_POSITIONS[0].y);
+  const [wPct, setWPct]             = useState("25");
+  const [hasDrawn, setHasDrawn]     = useState(false);
+  const [status, setStatus]         = useState<"idle" | "processing" | "done">("idle");
+  const [error, setError]           = useState<string | null>(null);
+
+  const canvasRef      = useRef<HTMLCanvasElement>(null);
+  const isDown         = useRef(false);
+  const lastPos        = useRef<{ x: number; y: number } | null>(null);
+
+  // Reset canvas whenever the draw tab is shown
+  useEffect(() => {
+    if (mode !== "draw") return;
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvasRef.current!.width, canvasRef.current!.height);
+    ctx.strokeStyle = "#111111";
+    ctx.lineWidth   = 2.5;
+    ctx.lineCap     = "round";
+    ctx.lineJoin    = "round";
+    setHasDrawn(false);
+  }, [mode]);
+
+  const getPos = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    const rect   = canvasRef.current!.getBoundingClientRect();
+    const scaleX = canvasRef.current!.width  / rect.width;
+    const scaleY = canvasRef.current!.height / rect.height;
+    return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+  };
+
+  const onDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    isDown.current = true;
+    lastPos.current = getPos(e);
+    setHasDrawn(true);
+  };
+
+  const onMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isDown.current || !lastPos.current) return;
+    const pos = getPos(e);
+    const ctx = canvasRef.current!.getContext("2d")!;
+    ctx.beginPath();
+    ctx.moveTo(lastPos.current.x, lastPos.current.y);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    lastPos.current = pos;
+  };
+
+  const onUp = () => { isDown.current = false; lastPos.current = null; };
+
+  const clearCanvas = () => {
+    const ctx = canvasRef.current?.getContext("2d");
+    if (!ctx) return;
+    ctx.clearRect(0, 0, canvasRef.current!.width, canvasRef.current!.height);
+    setHasDrawn(false);
+  };
+
+  const selectPreset = (p: (typeof SIGN_POSITIONS)[number]) => {
+    setPreset(p.label);
+    setXPct(p.x);
+    setYPct(p.y);
+  };
+
+  const getSignatureBlob = (): Promise<Blob> => {
+    if (mode === "draw") {
+      return new Promise((resolve, reject) =>
+        canvasRef.current!.toBlob(
+          (b) => (b ? resolve(b) : reject(new Error("Canvas export failed"))),
+          "image/png"
+        )
+      );
+    }
+    // Type mode: render italic text on an offscreen canvas
+    const offscreen = document.createElement("canvas");
+    offscreen.width  = 520;
+    offscreen.height = 120;
+    const ctx = offscreen.getContext("2d")!;
+    ctx.font          = "italic 52px Georgia, 'Times New Roman', serif";
+    ctx.fillStyle     = "#111111";
+    ctx.textBaseline  = "middle";
+    ctx.fillText(typedSig, 16, 62);
+    return new Promise((resolve, reject) =>
+      offscreen.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error("Canvas export failed"))),
+        "image/png"
+      )
+    );
+  };
+
+  const handleSign = async () => {
+    if (!pdfFile)                             { setError("Select a PDF file first.");          return; }
+    if (mode === "draw"  && !hasDrawn)        { setError("Draw your signature on the canvas."); return; }
+    if (mode === "type"  && !typedSig.trim()) { setError("Type your signature text.");          return; }
+    setStatus("processing"); setError(null);
+    try {
+      const sigBlob  = await getSignatureBlob();
+      const formData = new FormData();
+      formData.append("file",      pdfFile);
+      formData.append("signature", sigBlob, "signature.png");
+      formData.append("page", page);
+      formData.append("x",    xPct);
+      formData.append("y",    yPct);
+      formData.append("w",    wPct);
+      const res = await fetch("/api/pdf/sign", { method: "POST", body: formData });
+      if (!res.ok) { const j = await res.json(); throw new Error(j.error ?? "Sign failed"); }
+      downloadBlob(await res.blob(), pdfFile.name.replace(/\.pdf$/i, "-signed.pdf"));
+      setStatus("done");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Sign failed.");
+      setStatus("idle");
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-border bg-bg-main p-6 shadow-sm">
+      <ToolHeader
+        icon={<PenLine className="h-5 w-5 text-brand-primary" />}
+        title="Sign PDF"
+        description="Draw or type your signature and embed it into the document"
+      />
+
+      <SingleFileInput
+        file={pdfFile}
+        accept=".pdf,application/pdf"
+        onFile={(f) => { setPdfFile(f); setError(null); setStatus("idle"); }}
+        label="Click to select a PDF"
+      />
+
+      {/* Draw / Type tabs */}
+      <div className="mb-4 flex gap-1 rounded-lg border border-border bg-bg-section p-1">
+        {(["draw", "type"] as const).map((m) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => setMode(m)}
+            className={cn(
+              "flex-1 rounded-md py-1.5 text-sm font-medium capitalize transition-colors",
+              mode === m
+                ? "bg-bg-main text-text-primary shadow-sm"
+                : "text-text-secondary hover:text-text-primary"
+            )}
+          >
+            {m === "draw" ? "✏️ Draw" : "⌨️ Type"}
+          </button>
+        ))}
+      </div>
+
+      {mode === "draw" ? (
+        <div className="mb-4">
+          <div className="mb-1.5 flex items-center justify-between">
+            <label className="text-sm font-medium text-text-secondary">
+              Sign in the box below
+            </label>
+            <button
+              type="button"
+              onClick={clearCanvas}
+              className="text-xs text-text-secondary transition-colors hover:text-red-500"
+            >
+              Clear
+            </button>
+          </div>
+          <canvas
+            ref={canvasRef}
+            width={480}
+            height={120}
+            onPointerDown={onDown}
+            onPointerMove={onMove}
+            onPointerUp={onUp}
+            onPointerLeave={onUp}
+            className="w-full cursor-crosshair rounded-lg border border-border bg-white"
+            style={{ touchAction: "none" }}
+          />
+          <p className="mt-1 text-xs text-text-secondary">Use mouse or finger to draw</p>
+        </div>
+      ) : (
+        <div className="mb-4">
+          <label className="mb-1 block text-sm font-medium text-text-secondary">
+            Type your name
+          </label>
+          <input
+            type="text"
+            value={typedSig}
+            onChange={(e) => setTypedSig(e.target.value)}
+            placeholder="Your name or initials"
+            style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: "italic", fontSize: "1.35rem" }}
+            className="w-full rounded-lg border border-border bg-white px-3 py-2 text-text-primary placeholder:text-text-secondary/40 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+          />
+          <p className="mt-1 text-xs text-text-secondary">Rendered in an italic serif style</p>
+        </div>
+      )}
+
+      {/* Controls */}
+      <div className="mb-4 space-y-3">
+        <div>
+          <label className="mb-1 block text-sm font-medium text-text-secondary">Page number</label>
+          <input
+            type="number"
+            min="1"
+            value={page}
+            onChange={(e) => setPage(e.target.value)}
+            className="w-full rounded-lg border border-border bg-bg-section px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-primary"
+          />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-text-secondary">Position</label>
+          <div className="flex gap-2">
+            {SIGN_POSITIONS.map((p) => (
+              <button
+                key={p.label}
+                type="button"
+                onClick={() => selectPreset(p)}
+                className={cn(
+                  "flex-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-colors",
+                  preset === p.label
+                    ? "border-brand-primary bg-brand-primary text-white"
+                    : "border-border bg-bg-section text-text-secondary hover:border-brand-primary"
+                )}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium text-text-secondary">
+            Size: {wPct}% of page width
+          </label>
+          <input
+            type="range"
+            min="10"
+            max="50"
+            value={wPct}
+            onChange={(e) => setWPct(e.target.value)}
+            className="w-full accent-brand-primary"
+          />
+        </div>
+      </div>
+
+      <StatusMessages error={error} done={status === "done"} doneMsg="Signed PDF downloaded." />
+      <ActionButton
+        onClick={handleSign}
+        disabled={!pdfFile || status === "processing"}
+        processing={status === "processing"}
+        label="Sign & Download"
+        processingLabel="Signing…"
+      />
+    </div>
+  );
+}
+
 // ─── Optimize Tools ───────────────────────────────────────────────────────────
 
 function CompressPdfTool() {
@@ -1074,14 +1339,7 @@ export default function PDFToolkitPage() {
         <SectionHeading>Secure</SectionHeading>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <WatermarkTool />
-          {/* Sign PDF — coming soon */}
-          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-bg-main p-6 text-center shadow-sm">
-            <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">
-              <PenLine className="h-5 w-5 text-brand-primary" />
-            </div>
-            <p className="font-semibold text-text-primary">Sign PDF</p>
-            <p className="mt-1 text-xs text-text-secondary">Coming soon — draw or type your signature</p>
-          </div>
+          <SignTool />
         </div>
       </section>
 
