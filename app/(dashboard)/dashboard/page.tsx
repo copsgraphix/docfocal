@@ -105,14 +105,21 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div className="mb-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Energy — full-width row */}
+      {energy && (
+        <div className="mb-4">
+          <EnergyWidget initial={energy} variant="dashboard" />
+        </div>
+      )}
+
+      {/* Stats row */}
+      <div className="mb-10 grid gap-4 sm:grid-cols-3">
         {stats.map(({ label, value }) => (
           <div key={label} className="rounded-xl border border-border bg-bg-main p-5">
             <p className="text-xs text-text-secondary">{label}</p>
             <p className="mt-1 text-3xl font-bold text-text-primary">{value}</p>
           </div>
         ))}
-        {energy && <EnergyWidget initial={energy} variant="dashboard" />}
       </div>
 
       {/* CREATE & WRITE */}
