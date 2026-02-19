@@ -6,24 +6,35 @@ export default function MarketingLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-bg-main font-sans">
-      {/* Sticky header */}
-      <header className="sticky top-0 z-50 border-b border-border bg-bg-main">
+    <div
+      className="min-h-screen font-sans"
+      style={{ backgroundColor: "#0A0A0A", color: "#FFFFFF" }}
+    >
+      {/* Sticky dark header */}
+      <header
+        className="sticky top-0 z-50"
+        style={{
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          backgroundColor: "rgba(10,10,10,0.80)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
+        }}
+      >
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <Link href="/" className="text-xl font-bold text-text-primary">
-            doc<span className="text-brand-primary">focal</span>
+          <Link href="/" className="text-xl font-bold text-white">
+            doc<span style={{ color: "#E10600" }}>focal</span>
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex">
             <a
               href="#features"
-              className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
+              className="text-sm font-medium text-white/50 transition-colors hover:text-white"
             >
               Features
             </a>
             <a
               href="#pricing"
-              className="text-sm font-medium text-text-secondary transition-colors hover:text-text-primary"
+              className="text-sm font-medium text-white/50 transition-colors hover:text-white"
             >
               Pricing
             </a>
@@ -31,7 +42,8 @@ export default function MarketingLayout({
 
           <a
             href="/dashboard"
-            className="rounded-lg bg-brand-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-hover"
+            className="rounded-lg px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-80"
+            style={{ backgroundColor: "#E10600" }}
           >
             Get Started
           </a>
