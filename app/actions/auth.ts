@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
@@ -22,18 +23,39 @@ export async function signIn(formData: FormData) {
 export async function signUp(formData: FormData) {
   const supabase = await createClient();
   const siteUrl = await getSiteUrl();
+  const refCode = (formData.get("ref") as string | null)?.toUpperCase() ?? "";
 
   const { data, error } = await supabase.auth.signUp({
     email: formData.get("email") as string,
     password: formData.get("password") as string,
     options: {
-      // Ensures the confirmation email links back through our callback route
       emailRedirectTo: `${siteUrl}/auth/callback`,
     },
   });
 
   if (error) {
     redirect(`/signup?error=${encodeURIComponent(error.message)}`);
+  }
+
+  // Link referral: resolve referral code → referrer profile id
+  if (refCode && data.user) {
+    try {
+      const admin = createAdminClient();
+      const { data: referrer } = await admin
+        .from("profiles")
+        .select("id")
+        .eq("referral_code", refCode)
+        .single();
+
+      if (referrer?.id && referrer.id !== data.user.id) {
+        await admin
+          .from("profiles")
+          .update({ referred_by: referrer.id })
+          .eq("id", data.user.id);
+      }
+    } catch {
+      // Non-fatal — sign-up still proceeds
+    }
   }
 
   // session is null when Supabase requires email confirmation

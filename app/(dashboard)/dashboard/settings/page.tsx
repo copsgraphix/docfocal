@@ -3,7 +3,9 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Settings" };
 import { getUserPlan } from "@/lib/subscription";
+import { getUserEnergyStatus } from "@/lib/energy";
 import { updateProfile, changePassword } from "@/app/actions/settings";
+import { ReferralCard } from "@/components/dashboard/referral-card";
 import Link from "next/link";
 import { Zap } from "lucide-react";
 
@@ -12,9 +14,10 @@ export default async function SettingsPage({
 }: {
   searchParams: Promise<{ success?: string; error?: string }>;
 }) {
-  const [supabase, plan, params] = await Promise.all([
+  const [supabase, plan, energy, params] = await Promise.all([
     createClient(),
     getUserPlan(),
+    getUserEnergyStatus(),
     searchParams,
   ]);
 
@@ -115,6 +118,17 @@ export default async function SettingsPage({
           </button>
         </form>
       </section>
+
+      {/* Referral */}
+      {energy?.referralCode && (
+        <section className="rounded-xl border border-border bg-bg-main p-6">
+          <h3 className="mb-1 text-sm font-semibold text-text-primary">Referrals</h3>
+          <p className="mb-4 text-xs text-text-secondary">
+            Invite friends and earn energy or Pro time when they subscribe.
+          </p>
+          <ReferralCard referralCode={energy.referralCode} />
+        </section>
+      )}
 
       {/* Security */}
       <section className="rounded-xl border border-border bg-bg-main p-6">

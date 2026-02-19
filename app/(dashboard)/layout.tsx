@@ -2,6 +2,7 @@ import Sidebar from "@/components/sidebar";
 import PageHeader from "@/components/dashboard/page-header";
 import { SidebarProvider } from "@/components/dashboard/sidebar-context";
 import { createClient } from "@/lib/supabase/server";
+import { getUserEnergyStatus } from "@/lib/energy";
 
 export default async function DashboardLayout({
   children,
@@ -18,10 +19,12 @@ export default async function DashboardLayout({
     email.split("@")[0] ??
     "User";
 
+  const energy = await getUserEnergyStatus();
+
   return (
     <SidebarProvider>
       <div className="flex h-screen overflow-hidden">
-        <Sidebar user={{ name: displayName, email }} />
+        <Sidebar user={{ name: displayName, email }} energy={energy} />
         <div className="flex min-w-0 flex-1 flex-col">
           <PageHeader />
           <main className="flex-1 overflow-y-auto bg-bg-section p-6">

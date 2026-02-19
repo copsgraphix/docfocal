@@ -7,9 +7,9 @@ export const metadata: Metadata = { title: "Create account" };
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; ref?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, ref } = await searchParams;
 
   return (
     <>
@@ -24,6 +24,7 @@ export default async function SignupPage({
       )}
 
       <form action={signUp} className="space-y-4">
+        {ref && <input type="hidden" name="ref" value={ref} />}
         <div>
           <label
             htmlFor="email"
