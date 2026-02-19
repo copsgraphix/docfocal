@@ -6,12 +6,11 @@ import {
   GitMerge,
   Scissors,
   Package,
-  FileSearch,
   RotateCw,
   Trash2,
   Crop,
   Hash,
-  Pencil,
+  ImagePlus,
   PenLine,
   Droplets,
   FileOutput,
@@ -19,6 +18,7 @@ import {
   ImageIcon,
   FileImage,
   BookOpen,
+  Minimize2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getUserPlan } from "@/lib/subscription";
@@ -134,15 +134,14 @@ export default async function DashboardPage() {
       <section className="mb-10">
         <SectionHeading>PDF Toolkit</SectionHeading>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <ToolCard href="/dashboard/pdf" icon={Pencil}    title="Edit PDF"      description="Annotate and modify PDF pages" />
-          <ToolCard href="/dashboard/pdf" icon={GitMerge}  title="Merge PDFs"   description="Combine multiple PDFs into one" />
-          <ToolCard href="/dashboard/pdf" icon={Scissors}  title="Split PDF"    description="Extract a range of pages" />
-          <ToolCard href="/dashboard/pdf" icon={Package}   title="Compress PDF" description="Shrink PDF file size" />
-          <ToolCard href="/dashboard/pdf" icon={FileSearch} title="Extract Pages" description="Pull specific pages from a PDF" />
-          <ToolCard href="/dashboard/pdf" icon={RotateCw}  title="Rotate PDF"   description="Rotate pages 90°, 180°, or 270°" />
-          <ToolCard href="/dashboard/pdf" icon={Trash2}    title="Delete Pages" description="Remove unwanted pages" />
-          <ToolCard href="/dashboard/pdf" icon={Crop}      title="Crop PDF"     description="Trim margins from every page" />
-          <ToolCard href="/dashboard/pdf" icon={Hash}      title="Add Numbering" description="Add page numbers at the bottom" />
+          <ToolCard href="/dashboard/pdf/merge"        icon={GitMerge}  title="Merge PDFs"      description="Combine multiple PDFs into one" />
+          <ToolCard href="/dashboard/pdf/split"        icon={Scissors}  title="Split PDF"       description="Extract a range of pages" />
+          <ToolCard href="/dashboard/pdf/compress"     icon={Package}   title="Compress PDF"    description="Shrink PDF file size" />
+          <ToolCard href="/dashboard/pdf/rotate"       icon={RotateCw}  title="Rotate PDF"      description="Rotate pages 90°, 180°, or 270°" />
+          <ToolCard href="/dashboard/pdf/delete-pages" icon={Trash2}    title="Delete Pages"    description="Remove unwanted pages" />
+          <ToolCard href="/dashboard/pdf/crop"         icon={Crop}      title="Crop PDF"        description="Trim margins from every page" />
+          <ToolCard href="/dashboard/pdf/numbering"    icon={Hash}      title="Add Numbering"   description="Add page numbers at the bottom" />
+          <ToolCard href="/dashboard/pdf/add-image"    icon={ImagePlus} title="Add Image"       description="Embed an image on a specific page" />
         </div>
       </section>
 
@@ -150,8 +149,8 @@ export default async function DashboardPage() {
       <section className="mb-10">
         <SectionHeading>Secure</SectionHeading>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <ToolCard href="/dashboard/pdf" icon={Droplets}  title="Add Watermark" description="Stamp diagonal text on every page" />
-          <ToolCard href="/dashboard/pdf" icon={PenLine}   title="Sign PDF"      description="Draw or type your signature and embed it" />
+          <ToolCard href="/dashboard/pdf/watermark" icon={Droplets} title="Add Watermark" description="Stamp diagonal text on every page" />
+          <ToolCard href="/dashboard/pdf/sign"      icon={PenLine}  title="Sign PDF"      description="Draw or type your signature and embed it" />
         </div>
       </section>
 
@@ -159,12 +158,13 @@ export default async function DashboardPage() {
       <section className="mb-10">
         <SectionHeading>Convert</SectionHeading>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <ToolCard href="/dashboard/pdf" icon={FileOutput} title="PDF → Word"  description="Export PDF text as a .docx file" />
-          <ToolCard href="/dashboard/pdf" icon={ImageIcon}  title="PDF → JPEG"  description="Render each page as an image" />
-          <ToolCard href="/dashboard/pdf" icon={BookOpen}   title="PDF → EPUB"  description="Export PDF as an eBook" />
-          <ToolCard href="/dashboard/pdf" icon={FileInput}  title="Word → PDF"  description="Convert a .docx file to PDF" />
-          <ToolCard href="/dashboard/pdf" icon={FileImage}  title="Image → PDF" description="Pack JPEG/PNG images into a PDF" />
-          <ToolCard href="/dashboard/pdf" icon={BookOpen}   title="EPUB → PDF"  description="Convert an eBook to PDF" />
+          <ToolCard href="/dashboard/pdf/to-word"        icon={FileOutput} title="PDF → Word"      description="Export PDF text as a .docx file" />
+          <ToolCard href="/dashboard/pdf/to-jpeg"        icon={ImageIcon}  title="PDF → JPEG"      description="Render each page as an image" />
+          <ToolCard href="/dashboard/pdf/to-epub"        icon={BookOpen}   title="PDF → EPUB"      description="Export PDF as an eBook" />
+          <ToolCard href="/dashboard/pdf/from-word"      icon={FileInput}  title="Word → PDF"      description="Convert a .docx file to PDF" />
+          <ToolCard href="/dashboard/pdf/from-image"     icon={FileImage}  title="Image → PDF"     description="Pack JPEG/PNG images into a PDF" />
+          <ToolCard href="/dashboard/pdf/from-epub"      icon={BookOpen}   title="EPUB → PDF"      description="Convert an eBook to PDF" />
+          <ToolCard href="/dashboard/pdf/compress-image" icon={Minimize2}  title="Compress Image"  description="Resize and re-compress images" />
         </div>
       </section>
     </div>
