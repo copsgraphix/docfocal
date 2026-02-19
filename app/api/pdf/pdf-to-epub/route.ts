@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-// pdf-parse has no default export in its ESM types; use require
+// Use lib path directly to avoid pdf-parse's debug test code running in Next.js
+// (module.parent is undefined in bundled builds, which triggers the test path)
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require("pdf-parse");
+const pdfParse = require("pdf-parse/lib/pdf-parse.js");
 import JSZip from "jszip";
 
 function escapeHtml(str: string): string {
@@ -54,6 +55,15 @@ export async function POST(request: NextRequest) {
 
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
+
+    // Validate PDF magic bytes: all PDFs begin with %PDF (0x25 0x50 0x44 0x46)
+    if (buffer.length < 4 || buffer[0] !== 0x25 || buffer[1] !== 0x50 || buffer[2] !== 0x44 || buffer[3] !== 0x46) {
+      return NextResponse.json(
+        { error: "The uploaded file doesn't appear to be a valid PDF." },
+        { status: 422 }
+      );
+    }
+
     const data = await pdfParse(buffer);
     const chunks = chunkText(data.text);
     const bookTitle = file.name.replace(/\.pdf$/i, "");

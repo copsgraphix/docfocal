@@ -711,7 +711,8 @@ export function PdfToJpegTool() {
     setStatus("processing"); setError(null);
     try {
       const pdfjsLib = await import("pdfjs-dist");
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
       const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
       const blobs: { blob: Blob; name: string }[] = [];
       for (let i = 1; i <= pdf.numPages; i++) {
@@ -802,7 +803,7 @@ export function DocToPdfTool() {
     <div className="rounded-xl border border-border bg-bg-main p-6 shadow-sm">
       <ToolHeader icon={<FileInput className="h-5 w-5 text-brand-primary" />}
         title="Word → PDF" description="Convert a Word document to PDF" />
-      <SingleFileInput file={file} accept=".docx,.doc"
+      <SingleFileInput file={file} accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         onFile={(f) => { setFile(f); setError(null); setStatus("idle"); }} label="Click to select a .docx file" />
       <StatusMessages error={error} done={status === "done"} doneMsg="PDF downloaded." />
       <ActionButton onClick={handle} disabled={!file || status === "processing"}
@@ -898,27 +899,72 @@ export function EpubToPdfTool() {
 
 export function CompressPdfTool() {
   const [file, setFile] = useState<File | null>(null);
+  const [progress, setProgress] = useState<string | null>(null);
   const [status, setStatus] = useState<"idle" | "processing" | "done">("idle");
   const [error, setError] = useState<string | null>(null);
 
   const handle = async () => {
     if (!file) { setError("Select a PDF file first."); return; }
-    setStatus("processing"); setError(null);
-    const fd = new FormData(); fd.append("file", file);
+    setStatus("processing"); setError(null); setProgress(null);
     try {
-      const res = await fetch("/api/pdf/compress", { method: "POST", body: fd });
-      if (!res.ok) { const j = await res.json(); throw new Error(j.error ?? "Failed"); }
-      downloadBlob(await res.blob(), file.name.replace(/\.pdf$/i, "-compressed.pdf")); setStatus("done");
-    } catch (e) { setError(e instanceof Error ? e.message : "Compression failed."); setStatus("idle"); }
+      // Dynamic imports keep the initial bundle lean
+      const [{ PDFDocument }, pdfjsLib] = await Promise.all([
+        import("pdf-lib"),
+        import("pdfjs-dist"),
+      ]);
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
+      const originalBytes = await file.arrayBuffer();
+      const srcPdf = await pdfjsLib.getDocument({ data: originalBytes }).promise;
+      const numPages = srcPdf.numPages;
+      const newPdf = await PDFDocument.create();
+
+      for (let i = 1; i <= numPages; i++) {
+        setProgress(`Compressing page ${i} of ${numPages}…`);
+        const page = await srcPdf.getPage(i);
+        // Scale 1.5 × JPEG 0.75 gives ~60-75% smaller than the original for image-heavy PDFs
+        const vp = page.getViewport({ scale: 1.5 });
+        const canvas = document.createElement("canvas");
+        canvas.width = vp.width;
+        canvas.height = vp.height;
+        // pdfjs-dist v5 requires the canvas element in RenderParameters
+        await page.render({ canvasContext: canvas.getContext("2d")!, viewport: vp, canvas }).promise;
+        const jpegArrayBuffer = await new Promise<ArrayBuffer>((resolve, reject) =>
+          canvas.toBlob(
+            (blob) => (blob ? blob.arrayBuffer().then(resolve) : reject(new Error("toBlob failed"))),
+            "image/jpeg",
+            0.75
+          )
+        );
+        const jpegImage = await newPdf.embedJpg(new Uint8Array(jpegArrayBuffer));
+        const pdfPage = newPdf.addPage([vp.width, vp.height]);
+        pdfPage.drawImage(jpegImage, { x: 0, y: 0, width: vp.width, height: vp.height });
+      }
+
+      const compressedBytes = await newPdf.save({ useObjectStreams: true });
+      // compressedBytes.buffer is ArrayBufferLike; cast to ArrayBuffer for Blob ctor
+      downloadBlob(new Blob([compressedBytes.buffer as ArrayBuffer], { type: "application/pdf" }),
+        file.name.replace(/\.pdf$/i, "-compressed.pdf"));
+      setStatus("done");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Compression failed.");
+      setStatus("idle");
+    } finally {
+      setProgress(null);
+    }
   };
 
   return (
     <div className="rounded-xl border border-border bg-bg-main p-6 shadow-sm">
       <ToolHeader icon={<Minimize2 className="h-5 w-5 text-brand-primary" />}
-        title="Compress PDF" description="Reduce file size by removing redundant data" />
+        title="Compress PDF" description="Re-render pages as compressed images to shrink file size" />
       <SingleFileInput file={file} accept=".pdf,application/pdf"
         onFile={(f) => { setFile(f); setError(null); setStatus("idle"); }} label="Click to select a PDF" />
-      <p className="mb-4 text-xs text-text-secondary">Uses PDF object-stream compression. Best for text-heavy PDFs.</p>
+      <p className="mb-4 text-xs text-text-secondary">
+        Pages are re-rendered at reduced quality. Typically 50–75% smaller. Output will not be text-searchable.
+      </p>
+      {progress && <p className="mb-3 text-sm text-text-secondary">{progress}</p>}
       <StatusMessages error={error} done={status === "done"} doneMsg="Compressed PDF downloaded." />
       <ActionButton onClick={handle} disabled={!file || status === "processing"}
         processing={status === "processing"} label="Compress & Download" processingLabel="Compressing…" />
