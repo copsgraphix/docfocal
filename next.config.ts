@@ -15,17 +15,13 @@ const nextConfig: NextConfig = {
 // BetterStack logging
 const withLogtailConfig = withLogtail(nextConfig);
 
-// Sentry error monitoring
-export default withSentryConfig(withLogtailConfig, {
-  // Suppress noisy build output
-  silent: !process.env.CI,
-
-  // Only upload source maps when the auth token is available (skips on Railway if not set)
-  sourcemaps: {
-    disable: !process.env.SENTRY_AUTH_TOKEN,
-  },
-
-  // Sentry org + project (from sentry.io → Settings → Projects)
-  org: process.env.SENTRY_ORG,
-  project: process.env.SENTRY_PROJECT,
-});
+// Sentry — only wrap when auth token is present (avoids build failures on Railway
+// if the env var hasn't been added to the project yet)
+export default process.env.SENTRY_AUTH_TOKEN
+  ? withSentryConfig(withLogtailConfig, {
+      silent: !process.env.CI,
+      org: "docfocal-ly",
+      project: "javascript-nextjs",
+      sourcemaps: { disable: false },
+    })
+  : withLogtailConfig;
