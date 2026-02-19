@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-// Use lib path directly to avoid pdf-parse's debug test code running in Next.js
-// (module.parent is undefined in bundled builds, which triggers the test path)
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require("pdf-parse/lib/pdf-parse.js");
+import { PDFParse } from "pdf-parse";
 import { Document, Packer, Paragraph } from "docx";
 import { checkAndConsumeEnergy } from "@/lib/energy";
 
@@ -33,7 +30,8 @@ export async function POST(request: NextRequest) {
     const energyErr = await checkAndConsumeEnergy();
     if (energyErr) return energyErr;
 
-    const data = await pdfParse(buffer);
+    const parser = new PDFParse({ data: buffer });
+    const data = await parser.getText();
     const text = data.text;
 
     const paragraphs = text.split("\n").map((line: string) => new Paragraph({ text: line }));
