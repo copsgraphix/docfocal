@@ -5,17 +5,19 @@ import { Zap, Loader2 } from "lucide-react";
 
 interface CheckoutButtonProps {
   interval: "monthly" | "yearly";
+  isNGN: boolean;
 }
 
-export default function CheckoutButton({ interval }: CheckoutButtonProps) {
+export default function CheckoutButton({ interval, isNGN }: CheckoutButtonProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleUpgrade = async () => {
     setLoading(true);
     setError(null);
+    const endpoint = isNGN ? "/api/paystack/initialize" : "/api/stripe/checkout";
     try {
-      const res = await fetch("/api/paystack/initialize", {
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ interval }),

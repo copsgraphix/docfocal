@@ -131,7 +131,7 @@ export default function UpgradeToggle({
                 ✓ Active plan
               </div>
             ) : (
-              <CheckoutButton interval={interval} />
+              <CheckoutButton interval={interval} isNGN={currency.isNGN} />
             )}
           </div>
         </div>
