@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push:*)",
+      "mcp__supabase__get_project_url",
+      "mcp__supabase__list_tables",
+      "mcp__supabase__get_publishable_keys",
+      "mcp__supabase__search_docs",
+      "WebSearch",
+      "Bash(npm run build:*)",
+      "mcp__supabase__apply_migration",
+      "mcp__supabase__generate_typescript_types",
+      "mcp__supabase__get_advisors",
+      "Bash(npm install:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(npx tsc:*)",
+      "Bash(timeout 18 npm run dev:*)",
+      "Bash(railway logs:*)",
+      "Bash(railway status:*)",
+      "Bash(railway variables:*)",
+      "Bash(curl:*)",
+      "mcp__supabase__execute_sql",
+      "Bash(node -e:*)",
+      "Bash(ls:*)",
+      "Bash(npm ls:*)",
+      "Bash(python3:*)",
+      "Bash(npx @sentry/wizard@latest -i nextjs --saas --org docfocal-ly --project javascript-nextjs)",
+      "Bash(railway version:*)",
+      "Bash(railway up:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "supabase"
+  ]
+}

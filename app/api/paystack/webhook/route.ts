@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { resend, FROM, proUpgradeEmailHtml } from "@/lib/resend";
+import { getResend, FROM, proUpgradeEmailHtml } from "@/lib/resend";
 
 // Paystack plan codes for monthly vs yearly (set in env)
 const MONTHLY_PLAN_CODE = process.env.PAYSTACK_MONTHLY_PLAN_CODE ?? "";
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
         const { data: { user } } = await supabase.auth.admin.getUserById(updatedSub.user_id);
         if (user?.email) {
           const name = (user.user_metadata?.full_name as string) ?? user.email.split("@")[0];
-          resend.emails.send({
+          getResend().emails.send({
             from: FROM,
             to: user.email,
             subject: "You're on Pro ✦ — docfocal",
