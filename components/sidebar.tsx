@@ -2,25 +2,69 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import {
   LayoutDashboard,
+  FilePlus,
   FileText,
-  FileStack,
-  Contact,
+  FolderOpen,
+  Pencil,
+  GitMerge,
+  Scissors,
+  Package,
+  LayoutGrid,
+  PenLine,
+  Droplets,
+  FileOutput,
+  FileInput,
+  ImageIcon,
+  FileImage,
   Settings,
   Zap,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/app/actions/auth";
+import { useSidebar } from "@/components/dashboard/sidebar-context";
 
-const mainNav = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard/editor", label: "Document Editor", icon: FileText },
-  { href: "/dashboard/pdf", label: "PDF Toolkit", icon: FileStack },
-  { href: "/dashboard/cv", label: "CV Creator", icon: Contact },
+const NAV_GROUPS = [
+  {
+    label: "CREATE & WRITE",
+    items: [
+      { href: "/dashboard/editor", label: "New Document", icon: FilePlus },
+      { href: "/dashboard/cv", label: "CV Builder", icon: FileText },
+      { href: "/dashboard/pdf", label: "Open Word/Doc", icon: FolderOpen },
+    ],
+  },
+  {
+    label: "PDF TOOLKIT",
+    items: [
+      { href: "/dashboard/pdf", label: "Edit PDF", icon: Pencil },
+      { href: "/dashboard/pdf", label: "Merge PDFs", icon: GitMerge },
+      { href: "/dashboard/pdf", label: "Split PDF", icon: Scissors },
+      { href: "/dashboard/pdf", label: "Compress PDF", icon: Package },
+      { href: "/dashboard/pdf", label: "Organize", icon: LayoutGrid },
+    ],
+  },
+  {
+    label: "SECURE",
+    items: [
+      { href: "/dashboard/pdf", label: "Sign PDF", icon: PenLine },
+      { href: "/dashboard/pdf", label: "Add Watermark", icon: Droplets },
+    ],
+  },
+  {
+    label: "CONVERT",
+    items: [
+      { href: "/dashboard/pdf", label: "PDF to Word", icon: FileOutput },
+      { href: "/dashboard/pdf", label: "Word to PDF", icon: FileInput },
+      { href: "/dashboard/pdf", label: "PDF to Image", icon: ImageIcon },
+      { href: "/dashboard/pdf", label: "Image to PDF", icon: FileImage },
+    ],
+  },
 ];
 
-const bottomNav = [
+const BOTTOM_NAV = [
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
   { href: "/dashboard/upgrade", label: "Upgrade to Pro", icon: Zap },
 ];
@@ -29,8 +73,20 @@ interface SidebarProps {
   user: { name: string; email: string };
 }
 
+function isActive(href: string, pathname: string): boolean {
+  if (href === "/dashboard") return pathname === "/dashboard";
+  return pathname === href || pathname.startsWith(href + "/");
+}
+
 export default function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
+  const { isOpen, close } = useSidebar();
+
+  // Close drawer on route change
+  useEffect(() => {
+    close();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const initials = user.name
     .split(" ")
@@ -40,73 +96,126 @@ export default function Sidebar({ user }: SidebarProps) {
     .slice(0, 2);
 
   return (
-    <aside className="flex h-screen w-60 flex-col bg-sidebar-bg">
-      {/* Logo */}
-      <div className="flex h-16 items-center px-6">
-        <span className="text-xl font-bold text-white">
-          doc<span className="text-brand-primary">focal</span>
-        </span>
-      </div>
+    <>
+      {/* Mobile backdrop */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={close}
+          aria-hidden="true"
+        />
+      )}
 
-      {/* Main nav */}
-      <nav className="flex flex-1 flex-col gap-1 px-3 py-2">
-        {mainNav.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-              pathname === href
-                ? "bg-brand-primary text-white"
-                : "text-white/70 hover:bg-white/10 hover:text-white"
-            )}
-          >
-            <Icon className="h-4 w-4 shrink-0" />
-            {label}
-          </Link>
-        ))}
-
-        <div className="my-2 border-t border-white/10" />
-
-        {bottomNav.map(({ href, label, icon: Icon }) => (
-          <Link
-            key={href}
-            href={href}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-              pathname === href
-                ? "bg-brand-primary text-white"
-                : "text-white/70 hover:bg-white/10 hover:text-white"
-            )}
-          >
-            <Icon className="h-4 w-4 shrink-0" />
-            {label}
-          </Link>
-        ))}
-      </nav>
-
-      {/* User section */}
-      <div className="border-t border-white/10 px-4 py-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-primary text-xs font-bold text-white">
-            {initials}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-white">
-              {user.name}
-            </p>
-            <p className="truncate text-xs text-white/50">{user.email}</p>
-          </div>
-        </div>
-        <form action={signOut} className="mt-3">
+      <aside
+        className={cn(
+          // Mobile: fixed drawer, slides in/out
+          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-sidebar-bg",
+          "transition-transform duration-300 ease-in-out",
+          isOpen ? "translate-x-0" : "-translate-x-full",
+          // Desktop: static in-flow sidebar, always visible
+          "lg:relative lg:inset-auto lg:z-auto lg:translate-x-0 lg:transition-none"
+        )}
+      >
+        {/* Logo + close button (close only on mobile) */}
+        <div className="flex h-16 shrink-0 items-center justify-between px-5">
+          <span className="text-xl font-bold text-white">
+            doc<span className="text-brand-primary">focal</span>
+          </span>
           <button
-            type="submit"
-            className="w-full rounded-lg px-3 py-1.5 text-left text-xs font-medium text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+            onClick={close}
+            className="rounded-lg p-1.5 text-white/50 hover:bg-white/10 hover:text-white lg:hidden"
+            aria-label="Close sidebar"
           >
-            Sign out
+            <X className="h-4 w-4" />
           </button>
-        </form>
-      </div>
-    </aside>
+        </div>
+
+        {/* Dashboard home */}
+        <div className="shrink-0 px-3 pb-1">
+          <Link
+            href="/dashboard"
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+              isActive("/dashboard", pathname)
+                ? "bg-brand-primary/15 font-semibold text-brand-primary"
+                : "font-medium text-white/70 hover:bg-white/10 hover:text-white"
+            )}
+          >
+            <LayoutDashboard className="h-4 w-4 shrink-0" />
+            Dashboard
+          </Link>
+        </div>
+
+        {/* Grouped nav — scrollable */}
+        <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-3">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.label}>
+              <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-widest text-white/30">
+                {group.label}
+              </p>
+              <div className="space-y-0.5">
+                {group.items.map(({ href, label, icon: Icon }) => (
+                  <Link
+                    key={label}
+                    href={href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                      isActive(href, pathname)
+                        ? "bg-brand-primary/15 font-semibold text-brand-primary"
+                        : "font-medium text-white/70 hover:bg-white/10 hover:text-white"
+                    )}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        {/* Settings + Upgrade */}
+        <div className="shrink-0 space-y-0.5 border-t border-white/10 px-3 py-3">
+          {BOTTOM_NAV.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                isActive(href, pathname)
+                  ? "bg-brand-primary/15 font-semibold text-brand-primary"
+                  : "font-medium text-white/70 hover:bg-white/10 hover:text-white"
+              )}
+            >
+              <Icon className="h-4 w-4 shrink-0" />
+              {label}
+            </Link>
+          ))}
+        </div>
+
+        {/* User section */}
+        <div className="shrink-0 border-t border-white/10 px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-primary text-xs font-bold text-white">
+              {initials}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-white">
+                {user.name}
+              </p>
+              <p className="truncate text-xs text-white/50">{user.email}</p>
+            </div>
+          </div>
+          <form action={signOut} className="mt-3">
+            <button
+              type="submit"
+              className="w-full rounded-lg px-3 py-1.5 text-left text-xs font-medium text-white/50 transition-colors hover:bg-white/10 hover:text-white"
+            >
+              Sign out
+            </button>
+          </form>
+        </div>
+      </aside>
+    </>
   );
 }
