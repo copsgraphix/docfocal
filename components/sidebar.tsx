@@ -7,18 +7,22 @@ import {
   LayoutDashboard,
   FilePlus,
   FileText,
-  FolderOpen,
-  Pencil,
   GitMerge,
   Scissors,
   Package,
-  LayoutGrid,
+  FileSearch,
+  RotateCw,
+  Trash2,
+  Crop,
+  Hash,
+  Pencil,
   PenLine,
   Droplets,
   FileOutput,
   FileInput,
   ImageIcon,
   FileImage,
+  BookOpen,
   Settings,
   Zap,
   X,
@@ -33,7 +37,6 @@ const NAV_GROUPS = [
     items: [
       { href: "/dashboard/editor", label: "New Document", icon: FilePlus },
       { href: "/dashboard/cv", label: "CV Builder", icon: FileText },
-      { href: "/dashboard/pdf", label: "Open Word/Doc", icon: FolderOpen },
     ],
   },
   {
@@ -43,7 +46,11 @@ const NAV_GROUPS = [
       { href: "/dashboard/pdf", label: "Merge PDFs", icon: GitMerge },
       { href: "/dashboard/pdf", label: "Split PDF", icon: Scissors },
       { href: "/dashboard/pdf", label: "Compress PDF", icon: Package },
-      { href: "/dashboard/pdf", label: "Organize", icon: LayoutGrid },
+      { href: "/dashboard/pdf", label: "Extract Pages", icon: FileSearch },
+      { href: "/dashboard/pdf", label: "Rotate PDF", icon: RotateCw },
+      { href: "/dashboard/pdf", label: "Delete Pages", icon: Trash2 },
+      { href: "/dashboard/pdf", label: "Crop PDF", icon: Crop },
+      { href: "/dashboard/pdf", label: "Add Numbering", icon: Hash },
     ],
   },
   {
@@ -56,10 +63,12 @@ const NAV_GROUPS = [
   {
     label: "CONVERT",
     items: [
-      { href: "/dashboard/pdf", label: "PDF to Word", icon: FileOutput },
-      { href: "/dashboard/pdf", label: "Word to PDF", icon: FileInput },
-      { href: "/dashboard/pdf", label: "PDF to Image", icon: ImageIcon },
-      { href: "/dashboard/pdf", label: "Image to PDF", icon: FileImage },
+      { href: "/dashboard/pdf", label: "PDF → Word", icon: FileOutput },
+      { href: "/dashboard/pdf", label: "PDF → JPEG", icon: ImageIcon },
+      { href: "/dashboard/pdf", label: "PDF → EPUB", icon: BookOpen },
+      { href: "/dashboard/pdf", label: "Word → PDF", icon: FileInput },
+      { href: "/dashboard/pdf", label: "Image → PDF", icon: FileImage },
+      { href: "/dashboard/pdf", label: "EPUB → PDF", icon: BookOpen },
     ],
   },
 ];
@@ -108,15 +117,13 @@ export default function Sidebar({ user }: SidebarProps) {
 
       <aside
         className={cn(
-          // Mobile: fixed drawer, slides in/out
           "fixed inset-y-0 left-0 z-50 flex w-64 flex-col bg-sidebar-bg",
           "transition-transform duration-300 ease-in-out",
           isOpen ? "translate-x-0" : "-translate-x-full",
-          // Desktop: static in-flow sidebar, always visible
           "lg:relative lg:inset-auto lg:z-auto lg:translate-x-0 lg:transition-none"
         )}
       >
-        {/* Logo + close button (close only on mobile) */}
+        {/* Logo + close (mobile only) */}
         <div className="flex h-16 shrink-0 items-center justify-between px-5">
           <span className="text-xl font-bold text-white">
             doc<span className="text-brand-primary">focal</span>

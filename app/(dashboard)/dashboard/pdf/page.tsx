@@ -1050,67 +1050,53 @@ export default function PDFToolkitPage() {
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-text-primary">PDF Toolkit</h2>
         <p className="mt-1 text-text-secondary">
-          Merge, split, and convert PDF files — all processed securely in your session.
+          Edit, secure, and convert PDF files — all processed in your browser session.
         </p>
       </div>
 
-      {/* Organize */}
-      <section className="mb-8">
-        <SectionHeading>Organize</SectionHeading>
-        <div className="grid gap-6 md:grid-cols-2">
+      {/* PDF TOOLKIT */}
+      <section className="mb-10">
+        <SectionHeading>PDF Toolkit</SectionHeading>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <MergeTool />
           <SplitTool />
-        </div>
-      </section>
-
-      {/* Transform */}
-      <section className="mb-8">
-        <SectionHeading>Transform</SectionHeading>
-        <div className="grid gap-6 md:grid-cols-3">
+          <CompressPdfTool />
           <RotateTool />
           <DeletePagesTool />
           <CropTool />
-        </div>
-      </section>
-
-      {/* Enhance */}
-      <section className="mb-8">
-        <SectionHeading>Enhance</SectionHeading>
-        <div className="grid gap-6 md:grid-cols-3">
-          <WatermarkTool />
           <PageNumbersTool />
           <AddImageToPdfTool />
         </div>
       </section>
 
-      {/* Optimize */}
-      <section className="mb-8">
-        <SectionHeading>Optimize</SectionHeading>
-        <div className="grid gap-6 md:grid-cols-2">
-          <CompressPdfTool />
-          <CompressImageTool />
+      {/* SECURE */}
+      <section className="mb-10">
+        <SectionHeading>Secure</SectionHeading>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <WatermarkTool />
+          {/* Sign PDF — coming soon */}
+          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-bg-main p-6 text-center shadow-sm">
+            <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-lg bg-brand-primary/10">
+              <PenLine className="h-5 w-5 text-brand-primary" />
+            </div>
+            <p className="font-semibold text-text-primary">Sign PDF</p>
+            <p className="mt-1 text-xs text-text-secondary">Coming soon — draw or type your signature</p>
+          </div>
         </div>
       </section>
 
-      {/* Convert to PDF */}
-      <section className="mb-8">
-        <SectionHeading>Convert to PDF</SectionHeading>
+      {/* CONVERT */}
+      <section className="mb-10">
+        <SectionHeading>Convert</SectionHeading>
         <ConversionInfoBanner />
-        <div className="grid gap-6 md:grid-cols-3">
-          <JpegToPdfTool />
-          <DocToPdfTool />
-          <EpubToPdfTool />
-        </div>
-      </section>
-
-      {/* Export from PDF */}
-      <section className="mb-8">
-        <SectionHeading>Export from PDF</SectionHeading>
-        <ConversionInfoBanner />
-        <div className="grid gap-6 md:grid-cols-3">
-          <PdfToJpegTool />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           <PdfToDocTool />
+          <PdfToJpegTool />
           <PdfToEpubTool />
+          <DocToPdfTool />
+          <JpegToPdfTool />
+          <EpubToPdfTool />
+          <CompressImageTool />
         </div>
       </section>
     </div>
