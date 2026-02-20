@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
 
 const inter = Inter({
@@ -16,6 +15,11 @@ export const metadata: Metadata = {
   description:
     "Create, edit, and transform documents with speed and precision. Document editor, CV creator, PDF editor, and full PDF toolkit in one focused app.",
   metadataBase: new URL("https://docfocal.com"),
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+  },
   openGraph: {
     siteName: "docfocal",
     type: "website",
@@ -53,12 +57,6 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
         {children}
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6561075503765256"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
       </body>
     </html>
   );

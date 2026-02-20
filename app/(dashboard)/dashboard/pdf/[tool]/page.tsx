@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PdfToolRenderer } from "@/components/pdf-tool-renderer";
 
@@ -27,6 +28,17 @@ const TOOLS: Record<string, { title: string; description: string }> = {
 
 export function generateStaticParams() {
   return Object.keys(TOOLS).map((tool) => ({ tool }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ tool: string }>;
+}): Promise<Metadata> {
+  const { tool } = await params;
+  const entry = TOOLS[tool];
+  if (!entry) return {};
+  return { title: entry.title, description: entry.description };
 }
 
 export default async function PdfToolPage({

@@ -51,10 +51,17 @@ export async function cancelSubscription() {
       if (disableJson.status) {
         // Update DB immediately — the webhook will also fire and confirm this
         const admin = createAdminClient();
-        await admin
-          .from("subscriptions")
-          .update({ plan: "free", status: "cancelled" })
-          .eq("user_id", userId);
+        await Promise.all([
+          admin
+            .from("subscriptions")
+            .update({ plan: "free", status: "cancelled" })
+            .eq("user_id", userId),
+          // Also sync profile so energy system immediately drops to free
+          admin
+            .from("profiles")
+            .update({ plan_type: "free", pro_expires_at: null, updated_at: new Date().toISOString() })
+            .eq("id", userId),
+        ]);
         success = true;
       }
     }

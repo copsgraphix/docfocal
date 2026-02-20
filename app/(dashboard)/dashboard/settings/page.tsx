@@ -37,7 +37,15 @@ export default async function SettingsPage({
       {/* Banners */}
       {params.error && (
         <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-          {decodeURIComponent(params.error)}
+          {params.error === "name_required"
+            ? "Display name is required."
+            : params.error === "password_short"
+            ? "Password must be at least 6 characters."
+            : params.error === "update_failed"
+            ? "Could not update your profile. Please try again."
+            : params.error === "password_failed"
+            ? "Could not update your password. Please try again."
+            : "Something went wrong. Please try again."}
         </div>
       )}
       {params.success === "profile" && (

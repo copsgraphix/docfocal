@@ -23,6 +23,8 @@ export async function GET(request: NextRequest) {
     }
 
     const supabase = createAdminClient();
+
+    // 1. Record subscription (source of billing truth)
     await supabase
       .from("subscriptions")
       .upsert(
@@ -38,6 +40,13 @@ export async function GET(request: NextRequest) {
         },
         { onConflict: "user_id" }
       );
+
+    // 2. Immediately sync profile so energy system reflects Pro — the webhook
+    //    will also fire and confirm, but this closes the race window.
+    await supabase
+      .from("profiles")
+      .update({ plan_type: "pro", updated_at: new Date().toISOString() })
+      .eq("id", userId);
 
     return NextResponse.redirect(`${origin}/dashboard/upgrade?success=1`);
   } catch (error) {
