@@ -19,6 +19,9 @@ export const metadata: Metadata = {
     siteName: "docfocal",
     type: "website",
   },
+  other: {
+    "google-adsense-account": "ca-pub-6561075503765256",
+  },
 };
 
 export default function RootLayout({
@@ -28,16 +31,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <head>
+      <body className={`${inter.variable} antialiased`}>
+        {children}
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6561075503765256"
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
-      </head>
-      <body className={`${inter.variable} antialiased`}>
-        {children}
       </body>
     </html>
   );
