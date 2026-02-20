@@ -58,7 +58,7 @@ export default async function UpgradePage({
         </div>
       )}
       {params.cancelled && (
-        <div className="mb-6 rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
+        <div className="mb-6 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-700">
           Your subscription has been cancelled. You&apos;ll keep Pro access until the end of your billing period.
         </div>
       )}

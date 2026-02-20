@@ -7,6 +7,7 @@ import { Menu, X } from "lucide-react";
 const NAV_LINKS = [
   { label: "Features", href: "#features" },
   { label: "Pricing",  href: "#pricing"  },
+  { label: "Sign in",  href: "/login"    },
 ];
 
 const RED = "#E10600";

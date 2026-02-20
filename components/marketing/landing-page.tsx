@@ -268,11 +268,11 @@ function HeroMockup() {
 // ── Data ───────────────────────────────────────────────────────
 const WHY_CHECKS = [
   "Create documents like Word or Google Docs",
-  "Edit PDFs directly in your browser",
+  "Annotate and edit PDFs directly in your browser",
   "Convert between formats instantly",
   "Export books as structured EPUB",
   "Auto chapter numbering",
-  "No forced login to start",
+  "Quick sign-up, free to get started",
 ];
 
 const PDF_TOOLS = [
@@ -288,22 +288,22 @@ const CONVERSIONS = ["PDF ↔ DOCX", "PDF ↔ JPG / PNG", "Image → PDF", "Docu
 const EPUB_AUDIENCES = ["Self-publishing authors", "Course creators", "Academic writing"];
 
 const FREE_FEATURES = [
-  "No account needed",
-  "3 document creations",
-  "1 PDF edit per day",
-  "Limited daily conversions",
-  "15 MB file size limit",
-  "Automatic file deletion",
+  "Free account, no credit card",
+  "Document editor & CV builder",
+  "All PDF tools & conversions",
+  "10 energy credits per day",
+  "5 MB max upload",
+  "CV exports include watermark",
 ];
 
 const PRO_FEATURES = [
   "Everything in Free",
-  "Unlimited documents, edits & conversions",
-  "100 MB file size limit",
-  "Priority processing",
-  "Full CV templates",
-  "Cloud save — no auto-deletion",
+  "Unlimited energy — no daily cap",
+  "10 CV templates, no watermark",
+  "50 MB max upload",
+  "1 GB cloud storage",
   "Priority support",
+  "Early access to new features",
 ];
 
 // ── Main ───────────────────────────────────────────────────────
@@ -339,7 +339,7 @@ export default function LandingPage({ currency }: { currency: CurrencyConfig }) 
 
           {/* Sub */}
           <Mv className="mb-3 text-lg md:text-xl" style={{ color: TEXT }}>
-            Your complete document workspace — no login required.
+            Your complete document workspace — free to start.
           </Mv>
 
           {/* Body */}
@@ -347,14 +347,14 @@ export default function LandingPage({ currency }: { currency: CurrencyConfig }) 
             className="mx-auto mb-10 max-w-2xl text-sm leading-relaxed md:text-base"
             style={{ color: MUTED }}
           >
-            Docfocal lets you write documents, edit PDFs, convert files, and export to
-            EPUB with automatic chapter formatting — all in one place.
+            Write documents, annotate PDFs with a full canvas editor, build CVs, convert files,
+            and export to EPUB with automatic chapter formatting — all in one place.
           </Mv>
 
           {/* CTAs */}
           <Mv className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <motion.a
-              href="/dashboard"
+              href="/signup"
               animate={{
                 boxShadow: [
                   `0 0 18px ${RED}55`,
@@ -366,7 +366,7 @@ export default function LandingPage({ currency }: { currency: CurrencyConfig }) 
               className="flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold text-white"
               style={{ backgroundColor: RED }}
             >
-              Start Free — No Sign Up
+              Start for Free
               <ArrowRight className="h-4 w-4" strokeWidth={1.5} />
             </motion.a>
 
@@ -386,7 +386,7 @@ export default function LandingPage({ currency }: { currency: CurrencyConfig }) 
           </Mv>
 
           <Mv className="mt-4 text-xs" style={{ color: "#9CA3AF" }}>
-            Free usage. Limited by device. No account needed.
+            Free plan available. No credit card required.
           </Mv>
         </motion.div>
 
@@ -503,7 +503,7 @@ export default function LandingPage({ currency }: { currency: CurrencyConfig }) 
               </div>
               <h3 className="mb-2 text-lg font-bold" style={{ color: TEXT }}>Total PDF Control</h3>
               <p className="mb-5 text-xs leading-relaxed" style={{ color: MUTED }}>
-                Edit PDFs without installing heavy software. Fast. Browser-based. Secure.
+                Annotate, highlight, draw, redact, sign, watermark and export — all on a live canvas. No software install.
               </p>
               <div className="grid grid-cols-3 gap-2">
                 {PDF_TOOLS.map(({ icon: Icon, label }) => (
@@ -519,6 +519,13 @@ export default function LandingPage({ currency }: { currency: CurrencyConfig }) 
                   </div>
                 ))}
               </div>
+              <a
+                href="/dashboard/pdf-editor"
+                className="mt-4 inline-flex items-center gap-1 text-xs font-semibold"
+                style={{ color: RED }}
+              >
+                Try PDF Editor →
+              </a>
             </Mv>
 
             {/* Block 3 — Conversions */}
@@ -770,7 +777,7 @@ export default function LandingPage({ currency }: { currency: CurrencyConfig }) 
           </Mv>
           <Mv>
             <motion.a
-              href="/dashboard"
+              href="/signup"
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.97 }}
               className="inline-flex items-center gap-2 rounded-xl px-8 py-3.5 text-sm font-bold text-white"
@@ -785,27 +792,66 @@ export default function LandingPage({ currency }: { currency: CurrencyConfig }) 
 
       {/* ══ FOOTER ═══════════════════════════════════════════ */}
       <footer
-        className="px-6 py-8"
+        className="px-6 py-10"
         style={{ borderTop: "1px solid rgba(0,0,0,0.06)", backgroundColor: BG_1 }}
       >
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 md:flex-row">
-          <p className="text-sm font-bold" style={{ color: TEXT }}>
-            doc<span style={{ color: RED }}>focal</span>
-          </p>
-          <p className="text-xs" style={{ color: "#9CA3AF" }}>
-            © {new Date().getFullYear()} docfocal. All rights reserved.
-          </p>
-          <div className="flex gap-6">
-            {["Features", "Pricing"].map((item) => (
-              <a
-                key={item}
-                href={`#${item.toLowerCase()}`}
-                className="text-xs transition-colors hover:text-[#111111]"
-                style={{ color: "#9CA3AF" }}
-              >
-                {item}
-              </a>
-            ))}
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+            {/* Brand */}
+            <div>
+              <p className="mb-1 text-sm font-bold" style={{ color: TEXT }}>
+                doc<span style={{ color: RED }}>focal</span>
+              </p>
+              <p className="text-xs" style={{ color: "#9CA3AF" }}>
+                Your all-in-one document workspace.
+              </p>
+            </div>
+
+            {/* Links */}
+            <div className="flex flex-wrap gap-x-8 gap-y-3">
+              <div className="flex flex-col gap-2">
+                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#D1D5DB" }}>
+                  Product
+                </p>
+                {[
+                  { label: "Features", href: "#features" },
+                  { label: "Pricing",  href: "#pricing"  },
+                  { label: "Sign in",  href: "/login"    },
+                  { label: "Sign up",  href: "/signup"   },
+                ].map(({ label, href }) => (
+                  <a key={label} href={href} className="text-xs transition-colors hover:text-[#111111]" style={{ color: "#9CA3AF" }}>
+                    {label}
+                  </a>
+                ))}
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#D1D5DB" }}>
+                  Legal
+                </p>
+                {[
+                  { label: "Privacy Policy", href: "/privacy" },
+                  { label: "Terms of Service", href: "/terms" },
+                ].map(({ label, href }) => (
+                  <a key={label} href={href} className="text-xs transition-colors hover:text-[#111111]" style={{ color: "#9CA3AF" }}>
+                    {label}
+                  </a>
+                ))}
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="text-[10px] font-semibold uppercase tracking-widest" style={{ color: "#D1D5DB" }}>
+                  Support
+                </p>
+                <a href="mailto:support@docfocal.com" className="text-xs transition-colors hover:text-[#111111]" style={{ color: "#9CA3AF" }}>
+                  support@docfocal.com
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8 border-t pt-6" style={{ borderColor: "rgba(0,0,0,0.06)" }}>
+            <p className="text-center text-xs" style={{ color: "#9CA3AF" }}>
+              © {new Date().getFullYear()} docfocal. All rights reserved.
+            </p>
           </div>
         </div>
       </footer>
