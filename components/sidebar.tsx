@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   FilePlus,
   FileText,
+  Edit3,
   GitMerge,
   Scissors,
   Package,
@@ -35,8 +36,9 @@ const NAV_GROUPS = [
   {
     label: "CREATE & WRITE",
     items: [
-      { href: "/dashboard/editor", label: "New Document", icon: FilePlus },
-      { href: "/dashboard/cv",     label: "CV Builder",   icon: FileText },
+      { href: "/dashboard/editor",      label: "New Document", icon: FilePlus },
+      { href: "/dashboard/cv",          label: "CV Builder",   icon: FileText },
+      { href: "/dashboard/pdf-editor",  label: "PDF Editor",   icon: Edit3    },
     ],
   },
   {

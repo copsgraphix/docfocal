@@ -5,6 +5,7 @@ import { EnergyWidget } from "@/components/dashboard/energy-widget";
 import {
   FilePlus,
   FileText,
+  Edit3,
   GitMerge,
   Scissors,
   Package,
@@ -137,6 +138,12 @@ export default async function DashboardPage() {
             icon={FileText}
             title="CV Builder"
             description="Build a professional CV or resume"
+          />
+          <ToolCard
+            href="/dashboard/pdf-editor"
+            icon={Edit3}
+            title="PDF Editor"
+            description="Annotate, redact, draw and export PDFs"
           />
         </div>
       </section>
