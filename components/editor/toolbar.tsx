@@ -6,6 +6,7 @@ import {
   List, ListOrdered, Quote, Code, Undo, Redo, Link, ImageIcon, Minus,
   Highlighter, Indent, Outdent, Smile,
   AlignLeft, AlignCenter, AlignRight, AlignJustify, ChevronDown,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useRef, useState } from "react";
@@ -146,9 +147,11 @@ function StyleDropdown({
 export default function Toolbar({
   editor,
   onImageClick,
+  onGrammarClick,
 }: {
   editor: Editor;
   onImageClick: () => void;
+  onGrammarClick?: () => void;
 }) {
   const [showLinkInput, setShowLinkInput]   = useState(false);
   const [linkUrl, setLinkUrl]               = useState("https://");
@@ -380,6 +383,22 @@ export default function Toolbar({
       {/* ── History ── */}
       <Btn onClick={() => editor.chain().focus().undo().run()} title="Undo" disabled={!editor.can().undo()}><Undo className="h-4 w-4" /></Btn>
       <Btn onClick={() => editor.chain().focus().redo().run()} title="Redo" disabled={!editor.can().redo()}><Redo className="h-4 w-4" /></Btn>
+
+      {onGrammarClick && (
+        <>
+          <Sep />
+          {/* ── AI Grammar Pro ── */}
+          <button
+            type="button"
+            title="AI Grammar Pro — check and fix grammar (3 Energy)"
+            onMouseDown={(e) => { e.preventDefault(); onGrammarClick(); }}
+            className="flex items-center gap-1 rounded px-2 py-1.5 text-xs font-semibold text-brand-primary transition-colors hover:bg-brand-primary/10"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            Grammar
+          </button>
+        </>
+      )}
     </div>
   );
 }

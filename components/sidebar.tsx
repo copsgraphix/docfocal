@@ -27,6 +27,12 @@ import {
   Settings,
   Zap,
   X,
+  FileSearch,
+  ClipboardList,
+  SpellCheck,
+  Presentation,
+  ScanText,
+  GraduationCap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOut } from "@/app/actions/auth";
@@ -71,6 +77,17 @@ const NAV_GROUPS = [
       { href: "/dashboard/pdf/from-image",     label: "Image → PDF",      icon: FileImage  },
       { href: "/dashboard/pdf/from-epub",      label: "EPUB → PDF",       icon: BookOpen   },
       { href: "/dashboard/pdf/compress-image", label: "Compress Image",   icon: Minimize2  },
+    ],
+  },
+  {
+    label: "AI LAB",
+    items: [
+      { href: "/dashboard/ai/summarizer", label: "Summarizer",      icon: FileSearch    },
+      { href: "/dashboard/ai/exam-gen",   label: "Exam Q&A",        icon: ClipboardList },
+      { href: "/dashboard/editor",        label: "Grammar Pro",     icon: SpellCheck    },
+      { href: "/dashboard/ai/slidedeck",  label: "SlideDeck",       icon: Presentation  },
+      { href: "/dashboard/ai/ocr",        label: "Image OCR",       icon: ScanText      },
+      { href: "/dashboard/ai/chatbot",    label: "Academic Chat",   icon: GraduationCap },
     ],
   },
 ];

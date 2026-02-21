@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getUserEnergyStatus } from "@/lib/energy";
 import { EnergyWidget } from "@/components/dashboard/energy-widget";
 import { ToolCard } from "@/components/dashboard/tool-card";
+import { AIToolCard } from "@/components/dashboard/ai-tool-card";
 import { RecentTools } from "@/components/dashboard/recent-tools";
 import {
   FilePlus,
@@ -23,6 +24,13 @@ import {
   FileImage,
   BookOpen,
   Minimize2,
+  // AI Lab icons
+  FileSearch,
+  ClipboardList,
+  SpellCheck,
+  Presentation,
+  ScanText,
+  GraduationCap,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getUserPlan } from "@/lib/subscription";
@@ -94,6 +102,19 @@ export default async function DashboardPage() {
 
       {/* Recent tools — client component, reads from localStorage */}
       <RecentTools />
+
+      {/* AI STUDENT LAB */}
+      <section className="mb-10">
+        <SectionHeading>AI Student Lab</SectionHeading>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <AIToolCard href="/dashboard/ai/summarizer"  icon={FileSearch}    title="PDF/DOCX Summarizer"   description="Summarize any document instantly with AI" />
+          <AIToolCard href="/dashboard/ai/exam-gen"    icon={ClipboardList} title="Exam Q&amp;A Generator"    description="Generate practice questions from documents" />
+          <AIToolCard href="/dashboard/editor"         icon={SpellCheck}    title="AI Grammar Pro"         description="Fix grammar inside any document you write" />
+          <AIToolCard href="/dashboard/ai/slidedeck"   icon={Presentation}  title="SlideDeck Creator"      description="Generate a PPTX presentation with AI" />
+          <AIToolCard href="/dashboard/ai/ocr"         icon={ScanText}      title="Image Text Scanner"     description="Extract text from images with AI vision" />
+          <AIToolCard href="/dashboard/ai/chatbot"     icon={GraduationCap} title="Academic Chatbot"       description="SIWES reports, intros &amp; assignments — ask anything" />
+        </div>
+      </section>
 
       {/* CREATE & WRITE */}
       <section className="mb-10">

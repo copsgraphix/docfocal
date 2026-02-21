@@ -26,6 +26,12 @@ const TOOL_META: Record<string, { label: string }> = {
   "/dashboard/pdf/from-image":      { label: "Image → PDF" },
   "/dashboard/pdf/from-epub":       { label: "EPUB → PDF" },
   "/dashboard/pdf/compress-image":  { label: "Compress Image" },
+  // AI Lab
+  "/dashboard/ai/summarizer":       { label: "AI Summarizer" },
+  "/dashboard/ai/exam-gen":         { label: "Exam Q&A Gen" },
+  "/dashboard/ai/slidedeck":        { label: "SlideDeck Creator" },
+  "/dashboard/ai/ocr":              { label: "Image OCR" },
+  "/dashboard/ai/chatbot":          { label: "Academic Chat" },
 };
 
 export function RecentTools() {

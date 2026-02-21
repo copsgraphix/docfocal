@@ -30,6 +30,21 @@ export async function consumeEnergyServer(): Promise<ConsumeResult> {
   return data as ConsumeResult;
 }
 
+// ─── Bulk energy consumption (for AI features that cost 3 energy) ─────────────
+// Requires the consume_energy_bulk(p_user_id, p_amount) RPC in Supabase.
+export async function consumeEnergyBulkServer(amount: number): Promise<ConsumeResult> {
+  const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getClaims();
+  const userId = authData?.claims?.sub;
+  if (!userId) return { ok: false, reason: "profile_not_found", remaining: 0 };
+  const { data, error } = await supabase.rpc("consume_energy_bulk", {
+    p_user_id: userId,
+    p_amount: amount,
+  });
+  if (error || !data) return { ok: false, reason: "profile_not_found", remaining: 0 };
+  return data as ConsumeResult;
+}
+
 // ─── Convenience wrapper for API route handlers ────────────────────────────────
 // Returns a 402 NextResponse if the user is out of energy, or null if good to go.
 export async function checkAndConsumeEnergy(): Promise<NextResponse | null> {

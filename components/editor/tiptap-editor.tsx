@@ -12,10 +12,12 @@ import TextAlign from "@tiptap/extension-text-align";
 import { Extension } from "@tiptap/core";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ChevronDown, Download, Loader2 } from "lucide-react";
+import { ArrowLeft, ChevronDown, Download, Loader2, CheckCircle2, X } from "lucide-react";
 import Toolbar from "./toolbar";
 import { updateDocument } from "@/app/actions/documents";
 import type { Tables } from "@/lib/supabase/types";
+import { AiEnergyModal } from "@/components/dashboard/ai-energy-modal";
+import { NoEnergyModal } from "@/components/no-energy-modal";
 
 type Document = Tables<"documents">;
 type SaveStatus = "saved" | "saving" | "unsaved";
@@ -205,6 +207,13 @@ export default function TiptapEditor({ document }: { document: Document }) {
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [exporting, setExporting]     = useState<ExportFormat | null>(null);
 
+  // Grammar Pro state
+  const [grammarConfirmOpen, setGrammarConfirmOpen] = useState(false);
+  const [grammarLoading, setGrammarLoading]         = useState(false);
+  const [grammarResult, setGrammarResult]           = useState<{ corrected: string; changes: string[] } | null>(null);
+  const [grammarError, setGrammarError]             = useState("");
+  const [grammarNoEnergy, setGrammarNoEnergy]       = useState(false);
+
   const titleRef       = useRef(document.title);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const exportMenuRef  = useRef<HTMLDivElement>(null);
@@ -281,6 +290,48 @@ export default function TiptapEditor({ document }: { document: Document }) {
       editor?.chain().focus().setImage({ src }).run();
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleGrammarCheck = async () => {
+    if (!editor) return;
+    setGrammarLoading(true);
+    setGrammarResult(null);
+    setGrammarError("");
+    setGrammarConfirmOpen(false);
+    try {
+      const text = editor.getText();
+      if (!text.trim()) {
+        setGrammarError("The document is empty — write some text first.");
+        return;
+      }
+      const res = await fetch("/api/ai/grammar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (res.status === 402) { setGrammarNoEnergy(true); return; }
+      if (!res.ok) {
+        const err = await res.json();
+        setGrammarError(err.error ?? "Grammar check failed.");
+        return;
+      }
+      const data = await res.json();
+      setGrammarResult(data);
+    } finally {
+      setGrammarLoading(false);
+    }
+  };
+
+  const applyGrammarCorrections = () => {
+    if (!grammarResult || !editor) return;
+    // Replace editor content with the corrected text (plain text → paragraphs)
+    const paragraphs = grammarResult.corrected
+      .split(/\n+/)
+      .map((p) => `<p>${p.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`)
+      .join("");
+    editor.commands.setContent(paragraphs);
+    setGrammarResult(null);
+    scheduleSave(titleRef.current, JSON.stringify(editor.getJSON()));
   };
 
   const exportAs = async (format: ExportFormat) => {
@@ -387,6 +438,7 @@ export default function TiptapEditor({ document }: { document: Document }) {
         <Toolbar
           editor={editor}
           onImageClick={() => fileInputRef.current?.click()}
+          onGrammarClick={() => setGrammarConfirmOpen(true)}
         />
       )}
 
@@ -418,6 +470,73 @@ export default function TiptapEditor({ document }: { document: Document }) {
           ~{pageCount} page{pageCount !== 1 ? "s" : ""}
         </span>
       </div>
+
+      {/* Grammar Pro loading indicator */}
+      {grammarLoading && (
+        <div className="shrink-0 flex items-center gap-2 border-t border-brand-primary/20 bg-brand-primary/5 px-5 py-2.5 text-sm text-brand-primary">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          AI is checking your grammar…
+        </div>
+      )}
+
+      {/* Grammar Pro error */}
+      {grammarError && !grammarLoading && (
+        <div className="shrink-0 flex items-center justify-between border-t border-red-200 bg-red-50 px-5 py-2.5">
+          <span className="text-sm text-red-700">{grammarError}</span>
+          <button onClick={() => setGrammarError("")} className="text-red-500 hover:text-red-700">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Grammar Pro result panel */}
+      {grammarResult && !grammarLoading && (
+        <div className="shrink-0 border-t border-brand-primary/20 bg-brand-primary/5">
+          <div className="flex items-start justify-between px-5 py-3">
+            <div className="flex-1 min-w-0 pr-4">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-brand-primary" />
+                <span className="text-sm font-semibold text-text-primary">Grammar check complete</span>
+              </div>
+              {grammarResult.changes.length > 0 && (
+                <ul className="space-y-0.5 mb-2">
+                  {grammarResult.changes.slice(0, 5).map((change, i) => (
+                    <li key={i} className="text-xs text-text-secondary">• {change}</li>
+                  ))}
+                  {grammarResult.changes.length > 5 && (
+                    <li className="text-xs text-text-secondary">
+                      + {grammarResult.changes.length - 5} more corrections
+                    </li>
+                  )}
+                </ul>
+              )}
+            </div>
+            <div className="flex shrink-0 gap-2">
+              <button
+                onClick={() => setGrammarResult(null)}
+                className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:bg-bg-section"
+              >
+                Dismiss
+              </button>
+              <button
+                onClick={applyGrammarCorrections}
+                className="rounded-lg bg-brand-primary px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                Apply corrections
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Grammar Pro modals */}
+      <AiEnergyModal
+        open={grammarConfirmOpen}
+        onCancel={() => setGrammarConfirmOpen(false)}
+        onConfirm={handleGrammarCheck}
+        loading={grammarLoading}
+      />
+      <NoEnergyModal open={grammarNoEnergy} onClose={() => setGrammarNoEnergy(false)} />
     </div>
   );
 }
