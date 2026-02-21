@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     url: "https://docfocal.com",
     images: [
       {
-        url: "/og-image.png",
+        url: "/api/og",
         width: 1200,
         height: 630,
         alt: "docfocal — Document Tools That Work",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     title: "docfocal — Document Tools That Work",
     description:
       "Write documents, edit PDFs, build CVs, and convert files — all in one browser-based workspace.",
-    images: ["/og-image.png"],
+    images: ["/api/og"],
   },
   other: {
     "google-adsense-account": "ca-pub-6561075503765256",

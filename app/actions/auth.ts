@@ -25,12 +25,20 @@ export async function signUp(formData: FormData) {
   const supabase = await createClient();
   const siteUrl = await getSiteUrl();
   const refCode = (formData.get("ref") as string | null)?.toUpperCase() ?? "";
+  const name = ((formData.get("name") as string) ?? "").trim();
+  const password = formData.get("password") as string;
+  const confirmPassword = formData.get("confirmPassword") as string;
+
+  if (password !== confirmPassword) {
+    redirect("/signup?error=passwords_mismatch");
+  }
 
   const { data, error } = await supabase.auth.signUp({
     email: formData.get("email") as string,
-    password: formData.get("password") as string,
+    password,
     options: {
       emailRedirectTo: `${siteUrl}/auth/callback`,
+      data: { full_name: name || undefined },
     },
   });
 
@@ -40,14 +48,12 @@ export async function signUp(formData: FormData) {
 
   // Send welcome email (non-fatal)
   if (data.user) {
-    const name =
-      (formData.get("name") as string | null) ??
-      (data.user.email?.split("@")[0] ?? "there");
+    const displayName = name || data.user.email?.split("@")[0] || "there";
     getResend().emails.send({
       from: FROM,
       to: data.user.email!,
       subject: "Welcome to docfocal!",
-      html: welcomeEmailHtml(name),
+      html: welcomeEmailHtml(displayName),
     }).catch(() => {}); // fire-and-forget
   }
 

@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 export const metadata: Metadata = { title: "Settings" };
 import { getUserPlan } from "@/lib/subscription";
 import { getUserEnergyStatus } from "@/lib/energy";
-import { updateProfile, changePassword } from "@/app/actions/settings";
+import { updateProfile, changePassword, deleteAccount } from "@/app/actions/settings";
 import { ReferralCard } from "@/components/dashboard/referral-card";
 import Link from "next/link";
 import { Zap } from "lucide-react";
@@ -168,6 +168,27 @@ export default async function SettingsPage({
             className="rounded-lg bg-brand-primary px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
           >
             Update password
+          </button>
+        </form>
+      </section>
+      {/* Danger zone */}
+      <section className="rounded-xl border border-red-200 bg-bg-main p-6">
+        <h3 className="mb-1 text-sm font-semibold text-red-600">Delete account</h3>
+        <p className="mb-4 text-xs text-text-secondary">
+          Permanently delete your account and all data — documents, CVs, and subscription history.
+          This action cannot be undone.
+        </p>
+        <form action={deleteAccount}>
+          <button
+            type="submit"
+            className="rounded-lg border border-red-200 px-4 py-2 text-xs font-semibold text-red-600 transition-colors hover:bg-red-50"
+            onClick={(e) => {
+              if (!confirm("Are you sure? This will permanently delete your account and all data.")) {
+                e.preventDefault();
+              }
+            }}
+          >
+            Delete my account
           </button>
         </form>
       </section>

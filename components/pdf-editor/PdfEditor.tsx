@@ -64,10 +64,12 @@ export default function PdfEditor() {
   const [pageNumOpen, setPageNumOpen] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const canvasElRef = useRef<HTMLCanvasElement>(null);
   const fabricRef = useRef<import("fabric").Canvas | null>(null);
   const pagesRef = useRef<PageState[]>([]);
+  const historyRef = useRef<string[]>([]); // undo stack
   const currentPageRef = useRef(0);
   const activeToolRef = useRef<ToolName>("select");
   const drawColorRef = useRef(drawColor);
@@ -79,6 +81,14 @@ export default function PdfEditor() {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const pdfInsertInputRef = useRef<HTMLInputElement>(null);
   const destroyedRef = useRef(false);
+
+  // ── mobile detection ──────────────────────────────────────────────────────
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   // Keep refs in sync
   useEffect(() => { pagesRef.current = pages; }, [pages]);

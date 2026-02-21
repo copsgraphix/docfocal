@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getUserEnergyStatus } from "@/lib/energy";
 import { EnergyWidget } from "@/components/dashboard/energy-widget";
+import { ToolCard } from "@/components/dashboard/tool-card";
+import { RecentTools } from "@/components/dashboard/recent-tools";
 import {
   FilePlus,
   FileText,
@@ -36,59 +37,27 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
-function ToolCard({
-  href,
-  icon: Icon,
-  title,
-  description,
-  soon,
-}: {
-  href: string;
-  icon: React.ElementType;
-  title: string;
-  description: string;
-  soon?: boolean;
-}) {
-  if (soon) {
-    return (
-      <div className="group relative rounded-xl border border-dashed border-border bg-bg-main p-5 opacity-60">
-        <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10">
-          <Icon className="h-4 w-4 text-brand-primary" />
-        </div>
-        <p className="text-sm font-semibold text-text-primary">{title}</p>
-        <p className="mt-0.5 text-xs text-text-secondary">{description}</p>
-        <span className="absolute right-3 top-3 rounded-full bg-bg-section px-2 py-0.5 text-[10px] font-medium text-text-secondary">
-          Soon
-        </span>
-      </div>
-    );
-  }
-
-  return (
-    <Link
-      href={href}
-      className="group rounded-xl border border-border bg-bg-main p-5 shadow-sm transition-shadow hover:shadow-md"
-    >
-      <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary/10 transition-colors group-hover:bg-brand-primary/20">
-        <Icon className="h-4 w-4 text-brand-primary" />
-      </div>
-      <p className="text-sm font-semibold text-text-primary group-hover:text-brand-primary">
-        {title}
-      </p>
-      <p className="mt-0.5 text-xs text-text-secondary">{description}</p>
-    </Link>
-  );
-}
-
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  const [{ count: docCount }, { count: cvCount }, plan, energy] = await Promise.all([
-    supabase.from("documents").select("*", { count: "exact", head: true }),
-    supabase.from("cvs").select("*", { count: "exact", head: true }),
-    getUserPlan(),
-    getUserEnergyStatus(),
-  ]);
+  const [{ data: authData }, { count: docCount }, { count: cvCount }, plan, energy] =
+    await Promise.all([
+      supabase.auth.getClaims(),
+      supabase.from("documents").select("*", { count: "exact", head: true }),
+      supabase.from("cvs").select("*", { count: "exact", head: true }),
+      getUserPlan(),
+      getUserEnergyStatus(),
+    ]);
+
+  const claims = authData?.claims ?? null;
+  const email = (claims?.email as string) ?? "";
+  const displayName =
+    (claims?.user_metadata?.full_name as string) ??
+    email.split("@")[0] ??
+    "there";
+
+  const isNew = (docCount ?? 0) === 0 && (cvCount ?? 0) === 0;
+  const greeting = isNew ? `Welcome, ${displayName}!` : `Welcome back, ${displayName}!`;
 
   const stats = [
     { label: "Documents", value: docCount ?? 0 },
@@ -100,7 +69,7 @@ export default async function DashboardPage() {
     <div>
       {/* Header + stats */}
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-text-primary">Welcome back</h2>
+        <h2 className="text-2xl font-bold text-text-primary">{greeting}</h2>
         <p className="mt-1 text-text-secondary">
           Everything you need to create, edit, secure, and convert documents.
         </p>
@@ -123,28 +92,16 @@ export default async function DashboardPage() {
         ))}
       </div>
 
+      {/* Recent tools — client component, reads from localStorage */}
+      <RecentTools />
+
       {/* CREATE & WRITE */}
       <section className="mb-10">
         <SectionHeading>Create &amp; Write</SectionHeading>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <ToolCard
-            href="/dashboard/editor"
-            icon={FilePlus}
-            title="New Document"
-            description="Write and format rich-text documents"
-          />
-          <ToolCard
-            href="/dashboard/cv"
-            icon={FileText}
-            title="CV Builder"
-            description="Build a professional CV or resume"
-          />
-          <ToolCard
-            href="/dashboard/pdf-editor"
-            icon={Edit3}
-            title="PDF Editor"
-            description="Annotate, redact, draw and export PDFs"
-          />
+          <ToolCard href="/dashboard/editor"     icon={FilePlus} title="New Document" description="Write and format rich-text documents" />
+          <ToolCard href="/dashboard/cv"         icon={FileText} title="CV Builder"   description="Build a professional CV or resume" />
+          <ToolCard href="/dashboard/pdf-editor" icon={Edit3}    title="PDF Editor"   description="Annotate, redact, draw and export PDFs" />
         </div>
       </section>
 

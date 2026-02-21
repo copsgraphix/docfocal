@@ -95,6 +95,18 @@ export default function Sidebar({ user }: SidebarProps) {
 
   useEffect(() => {
     close();
+    // Track tool visits for the "Recently Used" widget on the dashboard
+    if (pathname !== "/dashboard") {
+      try {
+        const stored = JSON.parse(
+          localStorage.getItem("docfocal_recent_tools") ?? "[]"
+        ) as string[];
+        const next = [pathname, ...stored.filter((p) => p !== pathname)].slice(0, 5);
+        localStorage.setItem("docfocal_recent_tools", JSON.stringify(next));
+      } catch {
+        // ignore — localStorage may be unavailable
+      }
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
